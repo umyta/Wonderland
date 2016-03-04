@@ -3,19 +3,18 @@ using System.Collections;
 
 public class NetworkPlayer : Photon.MonoBehaviour
 {
-	public GameObject myCamera;
-
-	void Start ()
-	{
-		if (photonView.isMine) {
-			// Turn on everything that may cause conflicts during network playing.
-			myCamera.SetActive (true);	
-		}
-	}
+    void Start()
+    {
+        if (photonView.isMine)
+        {
+            // Set camera to follow this player when it's my turn.
+            GameObject.FindObjectOfType<CameraFollow>().SetTarget(transform);
+        }
+    }
 	
-	// Update is called once per frame
-	void Update ()
-	{
+    // Update is called once per frame
+    void Update()
+    {
 	
-	}
+    }
 }

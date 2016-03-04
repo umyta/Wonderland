@@ -8,7 +8,6 @@ public class NetworkManager : MonoBehaviour
     public string playerPrefabName = "NetworkPlayer";
     public string roomName = "Test";
     public Transform spawnPopint;
-    public GameObject standbyCamera;
 
     void Start()
     {
@@ -48,7 +47,6 @@ public class NetworkManager : MonoBehaviour
 
     void OnJoinedRoom()
     {
-        standbyCamera.SetActive(false);
         // Instantiate everything that every user should see here.
         PhotonNetwork.Instantiate(
             playerPrefabName,
