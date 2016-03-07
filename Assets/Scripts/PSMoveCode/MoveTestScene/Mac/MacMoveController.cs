@@ -1,7 +1,7 @@
 using UnityEngine;
 using System.Collections;
 
-public class MoveController : MonoBehaviour {
+public class MacMoveController : MonoBehaviour {
 
 	Renderer sphereRenderer;
 	private Light sphereLight;

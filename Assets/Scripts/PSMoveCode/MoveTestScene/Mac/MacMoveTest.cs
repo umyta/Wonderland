@@ -34,7 +34,7 @@ using UnityEngine;
 using System;
 using System.Collections.Generic;
 
-public class UniMoveTest : MonoBehaviour
+public class MacMoveTest : MonoBehaviour
 {
 	// This is the (3d object prototype in the scene)
 	private GameObject moveControllerPrefab;
@@ -42,7 +42,7 @@ public class UniMoveTest : MonoBehaviour
 	// We save a list of Move controllers.
 	private List<UniMoveController> moves = new List<UniMoveController>();
 	// This is a list of graphical representations of move controllers (3d object)
-	private List<MoveController> moveObjs = new List<MoveController>();
+	private List<MacMoveController> moveObjs = new List<MacMoveController>();
 
 
 	void Start()
@@ -58,10 +58,10 @@ public class UniMoveTest : MonoBehaviour
 		 */
 		Time.maximumDeltaTime = 0.1f;
 
-		moveControllerPrefab = GameObject.Find("MoveController");
+		moveControllerPrefab = GameObject.Find("MacMoveController");
 		Destroy(moveControllerPrefab);
-		if(moveControllerPrefab == null || moveControllerPrefab.GetComponent<MoveController>() == null)
-			Debug.LogError("GameObject with object named \"MoveController\" with script MoveController is missing from the scene");
+		if(moveControllerPrefab == null || moveControllerPrefab.GetComponent<MacMoveController>() == null)
+			Debug.LogError("GameObject with object named \"MacMoveController\" with script MacMoveController is missing from the scene");
 
 
 
@@ -100,10 +100,10 @@ public class UniMoveTest : MonoBehaviour
 				// Start all controllers with a white LED
 				move.SetLED(Color.white);
 
-				// adding the MoveController Objects on screen
+				// adding the MacMoveController Objects on screen
 				GameObject moveController = GameObject.Instantiate(moveControllerPrefab,
 					Vector3.right * count * 2 +  Vector3.left * i * 4, Quaternion.identity) as GameObject;
-				MoveController moveObj = moveController.GetComponent<MoveController>();
+				MacMoveController moveObj = moveController.GetComponent<MacMoveController>();
 				moveObjs.Add(moveObj);
 				moveObj.SetLED(Color.white);
 
@@ -118,7 +118,7 @@ public class UniMoveTest : MonoBehaviour
 		foreach(UniMoveController move in moves)
 		{
 
-			MoveController moveObj = moveObjs[i];
+			MacMoveController moveObj = moveObjs[i];
 
 			// Instead of this somewhat kludge-y check, we'd probably want to remove/destroy
 			// the now-defunct controller in the disconnected event handler below.
