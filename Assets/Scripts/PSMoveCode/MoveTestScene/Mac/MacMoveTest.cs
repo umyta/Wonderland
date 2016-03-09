@@ -64,18 +64,16 @@ public class MacMoveTest : MonoBehaviour
         if (moveControllerPrefab == null || moveControllerPrefab.GetComponent<MacMoveController>() == null)
             Debug.LogError("GameObject with object named \"MacMoveController\" with script MacMoveController is missing from the scene");
 
-
-
         int count = UniMoveController.GetNumConnected();
 
+        Debug.Log("Found " + count + " UniMoveController(s)");
         // Iterate through all connections (USB and Bluetooth)
         for (int i = 0; i < count; i++)
         {
             UniMoveController move = gameObject.AddComponent<UniMoveController>();	// It's a MonoBehaviour, so we can't just call a constructor
 
-
             // Remember to initialize!
-            if (!move.Init(i))
+            if (move.Init(i) != PSMove_Connect_Status.MoveConnect_OK)
             {
                 Destroy(move);	// If it failed to initialize, destroy and continue on
                 continue;
@@ -96,8 +94,7 @@ public class MacMoveTest : MonoBehaviour
                 move.OnControllerDisconnected += HandleControllerDisconnected;
 
                 move.InitOrientation();
-                move.ResetOrientation();
-
+//                move.EnableTracking();
                 // Start all controllers with a white LED
                 move.SetLED(Color.white);
 
@@ -124,7 +121,10 @@ public class MacMoveTest : MonoBehaviour
             // Instead of this somewhat kludge-y check, we'd probably want to remove/destroy
             // the now-defunct controller in the disconnected event handler below.
             if (move.Disconnected)
+            {
+                Debug.Log("Remove a now-defunct controller");
                 continue;
+            }
 
             // Button events. Works like Unity's Input.GetButton
             if (move.GetButtonDown(PSMoveButton.Circle))
@@ -163,7 +163,7 @@ public class MacMoveTest : MonoBehaviour
 			// Reset once in a while because of drifting
 			else if (move.GetButtonDown(PSMoveButton.Move))
             {
-                move.ResetOrientation();
+                move.EnableAndResetOrientation(PSMove_Bool.PSMove_True);
                 moveObj.SetLED(Color.black);
                 move.SetLED(Color.black);
             }
@@ -171,6 +171,14 @@ public class MacMoveTest : MonoBehaviour
             // Set the rumble based on how much the trigger is down
             move.SetRumble(move.Trigger);
             moveObj.gameObject.transform.localRotation = move.Orientation;
+//            Debug.Log("Orientation:" + move.Orientation);
+//            Debug.Log("Raw Acceleration:" + move.RawAcceleration.ToString());
+//            Debug.Log("Raw Gyro:" + move.RawGyroscope.ToString());
+//            Debug.Log("Acceleration" + move.Acceleration.ToString());
+//            Debug.Log("Gyro" + move.Gyro.ToString());
+//            Debug.Log((move.HasCalibration() ? "Has" : "Does not have") + "calibration");
+//            Debug.Log((move.HasOrientation() ? "Has" : "Does not have") + "orientation");
+//            Debug.Log("Magenetometer" + move.Magnetometer.ToString());
             i++;
         }
     }
@@ -178,6 +186,10 @@ public class MacMoveTest : MonoBehaviour
     void HandleControllerDisconnected(object sender, EventArgs e)
     {
         // TODO: Remove this disconnected controller from the list and maybe give an update to the player
+        int id = moves.IndexOf((UniMoveController)sender);
+        moves.RemoveAt(id);
+        moveObjs.RemoveAt(id);
+        Debug.LogWarning("Controller " + id + " is disconnected!");
     }
 
     void OnGUI()
