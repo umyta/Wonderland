@@ -1,4 +1,4 @@
- /**
+/**
  * UniMove API - A Unity plugin for the PlayStation Move motion controller
  * Copyright (C) 2012, 2013, Copenhagen Game Collective (http://www.cphgc.org)
  * 					         Patrick Jarnfelt
@@ -36,18 +36,18 @@ using System.Collections.Generic;
 
 public class MacMoveTest : MonoBehaviour
 {
-	// This is the (3d object prototype in the scene)
-	private GameObject moveControllerPrefab;
+    // This is the (3d object prototype in the scene)
+    private GameObject moveControllerPrefab;
 
-	// We save a list of Move controllers.
-	private List<UniMoveController> moves = new List<UniMoveController>();
-	// This is a list of graphical representations of move controllers (3d object)
-	private List<MacMoveController> moveObjs = new List<MacMoveController>();
+    // We save a list of Move controllers.
+    private List<UniMoveController> moves = new List<UniMoveController>();
+    // This is a list of graphical representations of move controllers (3d object)
+    private List<MacMoveController> moveObjs = new List<MacMoveController>();
 
 
-	void Start()
-	{
-		/* NOTE! We recommend that you limit the maximum frequency between frames.
+    void Start()
+    {
+        /* NOTE! We recommend that you limit the maximum frequency between frames.
 		 * This is because the controllers use Update() and not FixedUpdate(),
 		 * and yet need to update often enough to respond sufficiently fast.
 		 * Unity advises to keep this value "between 1/10th and 1/3th of a second."
@@ -56,124 +56,146 @@ public class MacMoveTest : MonoBehaviour
 		 * Obviously, this should only be relevant in case your framerare is starting
 		 * to lag. Most of the time, Update() should be called very regularly.
 		 */
-		Time.maximumDeltaTime = 0.1f;
+        Time.maximumDeltaTime = 0.1f;
 
-		moveControllerPrefab = GameObject.Find("MacMoveController");
-		Destroy(moveControllerPrefab);
-		if(moveControllerPrefab == null || moveControllerPrefab.GetComponent<MacMoveController>() == null)
-			Debug.LogError("GameObject with object named \"MacMoveController\" with script MacMoveController is missing from the scene");
-
-
-
-		int count = UniMoveController.GetNumConnected();
-
-		// Iterate through all connections (USB and Bluetooth)
-		for (int i = 0; i < count; i++)
-		{
-			UniMoveController move = gameObject.AddComponent<UniMoveController>();	// It's a MonoBehaviour, so we can't just call a constructor
-
-
-			// Remember to initialize!
-			if (!move.Init(i))
-			{
-				Destroy(move);	// If it failed to initialize, destroy and continue on
-				continue;
-			}
+        MacMoveController controller = (MacMoveController)GameObject.FindObjectOfType(typeof(MacMoveController));
+        moveControllerPrefab = controller.gameObject;
+        Destroy(moveControllerPrefab);
+        if (moveControllerPrefab == null || moveControllerPrefab.GetComponent<MacMoveController>() == null)
+            Debug.LogError("GameObject with object named \"MacMoveController\" with script MacMoveController is missing from the scene");
 
 
 
-			// This example program only uses Bluetooth-connected controllers
-			PSMoveConnectionType conn = move.ConnectionType;
-			if (conn == PSMoveConnectionType.Unknown || conn == PSMoveConnectionType.USB)
-			{
-				Destroy(move);
-			}
-			else
-			{
-				moves.Add(move);
+        int count = UniMoveController.GetNumConnected();
 
-				move.OnControllerDisconnected += HandleControllerDisconnected;
-
-				move.InitOrientation();
-				move.ResetOrientation();
-
-				// Start all controllers with a white LED
-				move.SetLED(Color.white);
-
-				// adding the MacMoveController Objects on screen
-				GameObject moveController = GameObject.Instantiate(moveControllerPrefab,
-					Vector3.right * count * 2 +  Vector3.left * i * 4, Quaternion.identity) as GameObject;
-				MacMoveController moveObj = moveController.GetComponent<MacMoveController>();
-				moveObjs.Add(moveObj);
-				moveObj.SetLED(Color.white);
-
-			}
-		}
-	}
+        // Iterate through all connections (USB and Bluetooth)
+        for (int i = 0; i < count; i++)
+        {
+            UniMoveController move = gameObject.AddComponent<UniMoveController>();	// It's a MonoBehaviour, so we can't just call a constructor
 
 
-	void Update()
-	{
-		int i = 0;
-		foreach(UniMoveController move in moves)
-		{
+            // Remember to initialize!
+            if (!move.Init(i))
+            {
+                Destroy(move);	// If it failed to initialize, destroy and continue on
+                continue;
+            }
 
-			MacMoveController moveObj = moveObjs[i];
 
-			// Instead of this somewhat kludge-y check, we'd probably want to remove/destroy
-			// the now-defunct controller in the disconnected event handler below.
-			if (move.Disconnected) continue;
 
-			// Button events. Works like Unity's Input.GetButton
-			if (move.GetButtonDown(PSMoveButton.Circle)){
-				Debug.Log("Circle Down");
-			}
-			if (move.GetButtonUp(PSMoveButton.Circle)){
-				Debug.Log("Circle UP");
-			}
+            // This example program only uses Bluetooth-connected controllers
+            PSMoveConnectionType conn = move.ConnectionType;
+            if (conn == PSMoveConnectionType.Unknown || conn == PSMoveConnectionType.USB)
+            {
+                Destroy(move);
+            }
+            else
+            {
+                moves.Add(move);
 
-			// Change the colors of the LEDs based on which button has just been pressed:
-			if (move.GetButtonDown(PSMoveButton.Circle))		{moveObj.SetLED(Color.cyan);move.SetLED(Color.cyan);}
-			else if(move.GetButtonDown(PSMoveButton.Cross)) 	{moveObj.SetLED(Color.red);move.SetLED(Color.red);}
-			else if(move.GetButtonDown(PSMoveButton.Square)) 	{moveObj.SetLED(Color.yellow);move.SetLED(Color.yellow);}
-			else if(move.GetButtonDown(PSMoveButton.Triangle)) 	{moveObj.SetLED(Color.magenta);move.SetLED(Color.magenta);}
+                move.OnControllerDisconnected += HandleControllerDisconnected;
+
+                move.InitOrientation();
+                move.ResetOrientation();
+
+                // Start all controllers with a white LED
+                move.SetLED(Color.white);
+
+                // adding the MacMoveController Objects on screen
+                GameObject moveController = GameObject.Instantiate(moveControllerPrefab,
+                                                Vector3.right * count * 2 + Vector3.left * i * 4, Quaternion.identity) as GameObject;
+                MacMoveController moveObj = moveController.GetComponent<MacMoveController>();
+                moveObjs.Add(moveObj);
+                moveObj.SetLED(Color.white);
+
+            }
+        }
+    }
+
+
+    void Update()
+    {
+        int i = 0;
+        foreach (UniMoveController move in moves)
+        {
+
+            MacMoveController moveObj = moveObjs[i];
+
+            // Instead of this somewhat kludge-y check, we'd probably want to remove/destroy
+            // the now-defunct controller in the disconnected event handler below.
+            if (move.Disconnected)
+                continue;
+
+            // Button events. Works like Unity's Input.GetButton
+            if (move.GetButtonDown(PSMoveButton.Circle))
+            {
+                Debug.Log("Circle Down");
+            }
+            if (move.GetButtonUp(PSMoveButton.Circle))
+            {
+                Debug.Log("Circle UP");
+            }
+
+            // Change the colors of the LEDs based on which button has just been pressed:
+            if (move.GetButtonDown(PSMoveButton.Circle))
+            {
+                moveObj.SetLED(Color.cyan);
+                move.SetLED(Color.cyan);
+            }
+            else if (move.GetButtonDown(PSMoveButton.Cross))
+            {
+                moveObj.SetLED(Color.red);
+                move.SetLED(Color.red);
+            }
+            else if (move.GetButtonDown(PSMoveButton.Square))
+            {
+                moveObj.SetLED(Color.yellow);
+                move.SetLED(Color.yellow);
+            }
+            else if (move.GetButtonDown(PSMoveButton.Triangle))
+            {
+                moveObj.SetLED(Color.magenta);
+                move.SetLED(Color.magenta);
+            }
 
 			// On pressing the move button we reset the orientation as well.
 			// Remember to keep the controller leveled and pointing at the screen
 			// Reset once in a while because of drifting
-			else if(move.GetButtonDown(PSMoveButton.Move)) {
-				move.ResetOrientation();
-				moveObj.SetLED(Color.black);
-				move.SetLED(Color.black);
-			}
+			else if (move.GetButtonDown(PSMoveButton.Move))
+            {
+                move.ResetOrientation();
+                moveObj.SetLED(Color.black);
+                move.SetLED(Color.black);
+            }
 
-			// Set the rumble based on how much the trigger is down
-			move.SetRumble(move.Trigger);
-			moveObj.gameObject.transform.localRotation = move.Orientation;
-			i++;
-		}
-	}
+            // Set the rumble based on how much the trigger is down
+            move.SetRumble(move.Trigger);
+            moveObj.gameObject.transform.localRotation = move.Orientation;
+            i++;
+        }
+    }
 
-	void HandleControllerDisconnected (object sender, EventArgs e)
-	{
-		// TODO: Remove this disconnected controller from the list and maybe give an update to the player
-	}
+    void HandleControllerDisconnected(object sender, EventArgs e)
+    {
+        // TODO: Remove this disconnected controller from the list and maybe give an update to the player
+    }
 
-	void OnGUI()
-	{
+    void OnGUI()
+    {
         string display = "";
 
-		if (moves.Count > 0)
-		{
+        if (moves.Count > 0)
+        {
             for (int i = 0; i < moves.Count; i++)
-			{
+            {
                 display += string.Format("PS Move {0}: ax:{1:0.000}, ay:{2:0.000}, az:{3:0.000} gx:{4:0.000}, gy:{5:0.000}, gz:{6:0.000}\n",
-					i+1, moves[i].Acceleration.x, moves[i].Acceleration.y, moves[i].Acceleration.z,
-					moves[i].Gyro.x, moves[i].Gyro.y, moves[i].Gyro.z);
+                    i + 1, moves[i].Acceleration.x, moves[i].Acceleration.y, moves[i].Acceleration.z,
+                    moves[i].Gyro.x, moves[i].Gyro.y, moves[i].Gyro.z);
             }
         }
-        else display = "No Bluetooth-connected controllers found. Make sure one or more are both paired and connected to this computer.";
+        else
+            display = "No Bluetooth-connected controllers found. Make sure one or more are both paired and connected to this computer.";
 
-        GUI.Label(new Rect(10, Screen.height-100, 500, 100), display);
+        GUI.Label(new Rect(10, Screen.height - 100, 500, 100), display);
     }
 }

@@ -1,7 +1,8 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class MovePlatform : MonoBehaviour {
+public class MovePlatform : MonoBehaviour
+{
     //Windows controllers
     public GameObject WinServer;
     public GameObject WinController;
@@ -12,20 +13,21 @@ public class MovePlatform : MonoBehaviour {
     public GameObject MacServer;
     public GameObject MacController;
 
-	// Use this for initialization
-	void Start () {
+    // Use this for initialization
+    void Start()
+    {
         Debug.Log("Starting");
-        if (Application.platform == RuntimePlatform.WindowsEditor || 
+        if (Application.platform == RuntimePlatform.WindowsEditor ||
             Application.platform == RuntimePlatform.WindowsPlayer)
         {
             Debug.Log("Windows System");
             WinServerInstance = Instantiate(WinServer, new Vector3(0f, 0f, 0f), Quaternion.identity) as GameObject;
             WinControllerInstance = Instantiate(WinController, new Vector3(0f, 0f, 0f), Quaternion.identity) as GameObject;
             WinControllerInstance.AddComponent<WinMoveTest>();
-            WinControllerInstance.GetComponent<WinMoveTest>().moveServer = WinServerInstance.transform.GetComponent<MoveServerNS.WinMoveServer> ();
+            WinControllerInstance.GetComponent<WinMoveTest>().moveServer = WinServerInstance.transform.GetComponent<MoveServerNS.WinMoveServer>();
         }
         else if (Application.platform == RuntimePlatform.OSXEditor ||
-            Application.platform == RuntimePlatform.OSXPlayer)
+                 Application.platform == RuntimePlatform.OSXPlayer)
         {
             Debug.Log("Mac OS");
             Instantiate(MacController, new Vector3(0f, 0f, 0f), Quaternion.identity);
