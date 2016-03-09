@@ -27,11 +27,11 @@ public class StartMenuPlatform : MonoBehaviour
             WinControllerInstance.GetComponent<StartMenuWinController>().moveServer = WinServerInstance.transform.GetComponent<MoveServerNS.WinMoveServer>();
         }
         else if (Application.platform == RuntimePlatform.OSXEditor ||
-            Application.platform == RuntimePlatform.OSXPlayer)
+                 Application.platform == RuntimePlatform.OSXPlayer)
         {
             Debug.Log("Mac OS");
-            Instantiate(MacServer, new Vector3(0f, 0f, 0f), Quaternion.identity);
             Instantiate(MacController, new Vector3(0f, 0f, 0f), Quaternion.identity);
+            Instantiate(MacServer, new Vector3(0f, 0f, 0f), Quaternion.identity);
         }
     }
 }
