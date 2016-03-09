@@ -6,7 +6,7 @@ public interface MotionController {
     //Physics rigidbody update
     void FixedUpdate();
     //Initialize positions
-    void setInitialPos(Vector3 pos, Quaternion angle);
+    void setInitialPos(Vector3 pos, Quaternion angle, Vector3 initialPos, Quaternion initialRot, bool setInitial);
     //Move on floor
     void Move(Vector3 deltaPos);
     //Rotational turn

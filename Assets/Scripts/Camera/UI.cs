@@ -38,6 +38,7 @@ public class UI : MonoBehaviour {
         closeMenu();
 	}
 
+    //not enabled right now
     public void closeMenu() {
         if (isCloseAnimationActive)
         {
@@ -57,6 +58,7 @@ public class UI : MonoBehaviour {
         }
     }
 
+    //animation to open the menu
     public void openMenu() {
         if (isOpenAnimationActive) {
             if (count > 1.0f)
@@ -74,7 +76,9 @@ public class UI : MonoBehaviour {
         }
     }
 
+    //set menu items active or inactive
     public void setActive(bool isActive) {
+        Debug.Log("Menu active set to " + isActive);
         this.isActive = isActive;
         LightObj.gameObject.SetActive(isActive);
         ExitObj.gameObject.SetActive(isActive);
@@ -87,6 +91,7 @@ public class UI : MonoBehaviour {
             count = 0.0f;
             isOpenAnimationActive = true;
         }
+        //close animation is not enabled right now
         else {
             count = 0.0f;
             isCloseAnimationActive = true;

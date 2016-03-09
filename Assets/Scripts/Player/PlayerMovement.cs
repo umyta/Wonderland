@@ -9,7 +9,6 @@ public class PlayerMovement : MonoBehaviour
     Animator anim;
     Rigidbody playerRigidbody;
     int floorMask;
-    int playerMask;
     int UIMask;
     float cameraRayLength = 100f;
     bool menuActive;
@@ -17,7 +16,6 @@ public class PlayerMovement : MonoBehaviour
     void Awake()
     {
         floorMask = LayerMask.GetMask("Floor");
-        playerMask = LayerMask.GetMask("Player");
         UIMask = LayerMask.GetMask("UI");
         anim = GetComponent<Animator>();
         playerRigidbody = GetComponent<Rigidbody>();
@@ -28,11 +26,25 @@ public class PlayerMovement : MonoBehaviour
     {
         // Raw value will have -1, 0 or 1. Full speed right away more responsive.
         float h = Input.GetAxisRaw("Horizontal"); 
-        float v = Input.GetAxisRaw("Vertical"); 
-        Move(h, v);
-        Turning();
-        openIngameUI();
-        Animating(h, v);
+        float v = Input.GetAxisRaw("Vertical");
+
+        //detect menu activation
+        if (Input.GetMouseButtonDown(0))
+        {
+            openIngameUI();
+        }
+
+        //if menu active, only allow menu operations
+        if (menuActive)
+        {
+            menuHighlight();
+        }
+        else {
+            //player is allowed to move
+            Move(h, v);
+            Turning();
+            Animating(h, v);
+        }
     }
 
     void Move(float h, float v)
@@ -55,11 +67,36 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
+    void menuHighlight() {
+        GameObject[] menuItems = GameObject.FindGameObjectsWithTag("UI");
+        foreach (GameObject menuItem in menuItems)
+        {
+            MeshRenderer mesh = menuItem.transform.GetComponentInChildren<MeshRenderer>();
+            mesh.material.color = Color.white;
+        }
+        //Highlight hover items
+        Ray camRay = Camera.main.ScreenPointToRay(Input.mousePosition);
+        RaycastHit buttonHit = new RaycastHit();
+        if (Physics.Raycast(camRay, out buttonHit, cameraRayLength, UIMask))
+        {
+            MeshRenderer mesh = buttonHit.transform.GetComponentInChildren<MeshRenderer>();
+            mesh.material.color = Color.yellow;
+            Debug.Log("Hit a " + buttonHit.transform.gameObject.name);
+            if (buttonHit.transform.gameObject.name == "Exit") {
+                buttonHit.transform.GetComponent<doorAnimation>().setAnimationActive();
+            }
+        }
+    }
+
     void openIngameUI() {
         Ray camRay = Camera.main.ScreenPointToRay(Input.mousePosition);
-        if (Physics.Raycast(camRay, cameraRayLength, playerMask)) {
-            menuActive = !menuActive;
-            Camera.main.transform.Find("UI").GetComponent<UI>().setActive(menuActive);
+        RaycastHit playerHit = new RaycastHit();
+        if (Physics.Raycast(camRay, out playerHit, cameraRayLength)) {
+            if (playerHit.transform.gameObject.tag == "Player") {
+                Debug.Log("Clicking on player. Should open menu...");
+                menuActive = !menuActive;
+                Camera.main.transform.Find("UI").GetComponent<UI>().setActive(menuActive);
+            }
         }
     }
 

@@ -9,6 +9,13 @@ public class Level01WinController : MonoBehaviour, MotionController {
     public WinMoveServer moveServer;
     [Range(1, 6)]
     public int controller;
+    public GameObject controlBall;
+
+    //UI
+    private Vector3 worldControllerInitPos;
+    private Quaternion worldControllerInitRot;
+    private Vector3 actualControllerPrevPos;
+    private bool setUIInitial;
 
     //Player Movement
     public float speed = 6f;
@@ -30,6 +37,7 @@ public class Level01WinController : MonoBehaviour, MotionController {
         controller = 1;
         anim = GetComponent<Animator>();
         playerRigidbody = GetComponent<Rigidbody>();
+        worldControllerInitPos = Camera.main.transform.position;
 	}
 	
 	// Update is called once per frame
@@ -37,29 +45,49 @@ public class Level01WinController : MonoBehaviour, MotionController {
         WinMoveController move = moveServer.getController(controller - 1);
 
         if (move != null) {
-            //=================Allow player to move===========//
             //Move coordinates
             float moveX = move.getPositionSmooth().x;
             float moveY = move.getPositionSmooth().y;
             float moveZ = move.getPositionSmooth().z;
+            Vector3 actualControllerCurrPos = new Vector3(moveX, moveY, moveZ);
 
             Quaternion moveAngle = move.getQuaternion();
 
-            RaycastHit hit = new RaycastHit();
-            Debug.DrawLine(Camera.main.transform.position, transform.position, Color.green);
-            if (Physics.Raycast(Camera.main.transform.position, transform.position, out hit)) {
-                Debug.Log("Player hit " + hit.transform.gameObject.name);
+            //=================UI System======================//
+            if (!setUIInitial)
+            {
+                //setInitialPos(actualControllerCurrPos, moveAngle, worldControllerInitPos, worldControllerInitRot, setUIInitial);
+                worldControllerInitPos = Camera.main.transform.position + Camera.main.transform.forward;
+                worldControllerInitRot = Quaternion.identity;
+                setUIInitial = true;
+                actualControllerPrevPos = actualControllerCurrPos;
             }
+            else {
+                Vector3 delta = actualControllerCurrPos - actualControllerPrevPos;
+                worldControllerInitPos += delta * 10;
+                controlBall.transform.position = worldControllerInitPos;
+                //actualControllerPrevPos = actualControllerCurrPos;
+                //Debug.Log("Delta is " + delta.x + " " + delta.y + " " + delta.z);
 
+                RaycastHit hit = new RaycastHit();
+                Debug.DrawRay(Camera.main.transform.position, delta * 100, Color.green, Time.deltaTime, true);
+                if (Physics.Raycast(Camera.main.transform.position, delta * 100, out hit, 100))
+                {
+                    Debug.Log("Player hit " + hit.transform.gameObject.name);
+                }
+            }
+           
+            
+            //=================Allow player to move===========//
             //calculate delta position of move controller
             if (move.btnPressed(MoveButton.BTN_MOVE)) {
                 //set initial position and rotation
                 if (!setInitial)
                 {
-                    setInitialPos(new Vector3(moveX, moveY, moveZ), moveAngle);
+                    setInitialPos(actualControllerCurrPos, moveAngle, initialPos, initialRot, setInitial);
                 }
                 else {
-                    Vector3 deltaPos = new Vector3(moveX, moveY, moveZ) - initialPos;
+                    Vector3 deltaPos = actualControllerCurrPos - initialPos;
                     deltaPos = deltaPos.normalized * SPEED;
                     deltaPos.y = 0;
                     deltaPos.z = -deltaPos.z;
@@ -73,7 +101,7 @@ public class Level01WinController : MonoBehaviour, MotionController {
         }
 	}
 
-    public void setInitialPos(Vector3 pos, Quaternion angle) {
+    public void setInitialPos(Vector3 pos, Quaternion angle, Vector3 initialPos, Quaternion initialRot, bool setInitial) {
         initialPos = pos;
         initialRot = angle;
         setInitial = true;
