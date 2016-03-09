@@ -9,11 +9,16 @@ public class PlayerMovement : MonoBehaviour
     Animator anim;
     Rigidbody playerRigidbody;
     int floorMask;
+    int playerMask;
+    int UIMask;
     float cameraRayLength = 100f;
+    bool menuActive;
 
     void Awake()
     {
-        floorMask = LayerMask.GetMask("Floor"); 
+        floorMask = LayerMask.GetMask("Floor");
+        playerMask = LayerMask.GetMask("Player");
+        UIMask = LayerMask.GetMask("UI");
         anim = GetComponent<Animator>();
         playerRigidbody = GetComponent<Rigidbody>();
     }
@@ -26,6 +31,7 @@ public class PlayerMovement : MonoBehaviour
         float v = Input.GetAxisRaw("Vertical"); 
         Move(h, v);
         Turning();
+        openIngameUI();
         Animating(h, v);
     }
 
@@ -46,6 +52,14 @@ public class PlayerMovement : MonoBehaviour
             playerToMouse.y = 0.0f; // Make sure that they player does not move away from the floor
             Quaternion newRotation = Quaternion.LookRotation(playerToMouse * Time.deltaTime);
             playerRigidbody.MoveRotation(newRotation);
+        }
+    }
+
+    void openIngameUI() {
+        Ray camRay = Camera.main.ScreenPointToRay(Input.mousePosition);
+        if (Physics.Raycast(camRay, cameraRayLength, playerMask)) {
+            menuActive = !menuActive;
+            Camera.main.transform.Find("UI").GetComponent<UI>().setActive(menuActive);
         }
     }
 

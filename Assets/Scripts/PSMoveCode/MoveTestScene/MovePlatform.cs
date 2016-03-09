@@ -28,8 +28,8 @@ public class MovePlatform : MonoBehaviour {
             Application.platform == RuntimePlatform.OSXPlayer)
         {
             Debug.Log("Mac OS");
-            Instantiate(MacServer, new Vector3(0f, 0f, 0f), Quaternion.identity);
             Instantiate(MacController, new Vector3(0f, 0f, 0f), Quaternion.identity);
+            Instantiate(MacServer, new Vector3(0f, 0f, 0f), Quaternion.identity);
         }
     }
 }
