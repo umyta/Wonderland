@@ -39,7 +39,8 @@ public class PlayerMovement : MonoBehaviour
         {
             menuHighlight();
         }
-        else {
+        else
+        {
             //player is allowed to move
             Move(h, v);
             Turning();
@@ -49,7 +50,8 @@ public class PlayerMovement : MonoBehaviour
 
     void Move(float h, float v)
     {
-        movement.Set(h, 0f, v);
+        movement = transform.forward * v;
+        movement += transform.right * h;
         movement = movement.normalized * speed * Time.deltaTime;
         playerRigidbody.MovePosition(transform.position + movement);
     }
@@ -67,7 +69,8 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
-    void menuHighlight() {
+    void menuHighlight()
+    {
         GameObject[] menuItems = GameObject.FindGameObjectsWithTag("UI");
         foreach (GameObject menuItem in menuItems)
         {
@@ -82,17 +85,21 @@ public class PlayerMovement : MonoBehaviour
             MeshRenderer mesh = buttonHit.transform.GetComponentInChildren<MeshRenderer>();
             mesh.material.color = Color.yellow;
             Debug.Log("Hit a " + buttonHit.transform.gameObject.name);
-            if (buttonHit.transform.gameObject.name == "Exit") {
+            if (buttonHit.transform.gameObject.name == "Exit")
+            {
                 buttonHit.transform.GetComponent<doorAnimation>().setAnimationActive();
             }
         }
     }
 
-    void openIngameUI() {
+    void openIngameUI()
+    {
         Ray camRay = Camera.main.ScreenPointToRay(Input.mousePosition);
         RaycastHit playerHit = new RaycastHit();
-        if (Physics.Raycast(camRay, out playerHit, cameraRayLength)) {
-            if (playerHit.transform.gameObject.tag == "Player") {
+        if (Physics.Raycast(camRay, out playerHit, cameraRayLength))
+        {
+            if (playerHit.transform.gameObject.tag == "Player")
+            {
                 Debug.Log("Clicking on player. Should open menu...");
                 menuActive = !menuActive;
                 Camera.main.transform.Find("UI").GetComponent<UI>().setActive(menuActive);
