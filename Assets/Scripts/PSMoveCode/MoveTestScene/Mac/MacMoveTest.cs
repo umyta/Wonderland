@@ -94,7 +94,7 @@ public class MacMoveTest : MonoBehaviour
                 move.OnControllerDisconnected += HandleControllerDisconnected;
 
                 move.InitOrientation();
-//                move.EnableTracking();
+                // move.EnableTracking(); missing .dll file for this to work
                 // Start all controllers with a white LED
                 move.SetLED(Color.white);
 
