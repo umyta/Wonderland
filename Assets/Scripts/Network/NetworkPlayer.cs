@@ -15,6 +15,6 @@ public class NetworkPlayer : Photon.MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-	
+        
     }
 }
