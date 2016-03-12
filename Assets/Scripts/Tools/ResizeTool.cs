@@ -52,25 +52,26 @@ public class ResizeTool : MonoBehaviour, ToolInterface
     {
         // If nobody is using the resizing tool, the user can use it.
         if (resizing)
-        {
-            Debug.Log(user.name + " is using a resizing tool. Please wait.");
+        { 
+            Debug.Log("Somebody else is using this tool.");
             return;
         }
 
-        Debug.Log("Using resizing tool");
         GameObject[] players = GameObject.FindGameObjectsWithTag("Player");
         foreach (GameObject player in players)
         {
-            if (player.GetPhotonView().isMine)
+            // Only start to use the tool if the player was close to this tool right before, and it is the player's turn.
+            if (player.GetPhotonView().isMine &&
+                player.GetComponent<PlayerToolPack>().UseResizeTool().name == transform.name)
             {
                 Debug.Log("Player " + player.name + " Now controls the resizing tool " + transform.name);
                 user = player.transform;
+                SwitchViewPortToResizeCamera();
+                return;
             }
         }
-        if (user != null && user.GetComponent<PlayerToolPack>().HasResizeTool())
-        {
-            SwitchViewPortToResizeCamera();   
-        }
+        Debug.Log("Need to go closer to the tool.");
+
     }
 
     public void Done()
@@ -91,23 +92,31 @@ public class ResizeTool : MonoBehaviour, ToolInterface
 
     private void SwitchViewPortToResizeCamera()
     {
-        // Port main camera as a small sub camera view on the top right corner.
-        mainCamera.rect.Set(0.75f, 0.75f, 1.0f, 1.0f);
-        mainCamera.depth = 0;
-        // Change active camera, and bring the active camera back.
+        // Enable first person view, and attach to player.
         cameraTool.gameObject.SetActive(true);
-        cameraTool.depth = 1;
+        cameraTool.tag = "MainCamera";
+        cameraTool.depth = 0;
         SetAllColliders(false);
         resizing = true;
-        // Enable first person view, and attach to player.
+        mainCamera.gameObject.SetActive(false);
+        // Port main camera as a small sub camera view on the top right corner.
+        // TODO: Adding second window here affects mouse control for turning.
+        // because it is stil controlled through main camera casting.
+        mainCamera.rect = new Rect(-0.75f, 0.75f, 1.0f, 1.0f);
+        mainCamera.depth = 1;
+        mainCamera.tag = "DisabledMainCam";
+        mainCamera.gameObject.SetActive(true);
+        // Change active camera, and bring the active camera back.
     }
 
     private void SwitchViewPortToMainCamera()
     {
         // Report main camera to full screen.
-        mainCamera.rect.Set(0.0f, 0.0f, 1.0f, 1.0f);
+        mainCamera.rect = new Rect(0.0f, 0.0f, 1.0f, 1.0f);
+        mainCamera.tag = "MainCamera";
         // Deactive the cameraTool.
         cameraTool.gameObject.SetActive(false);
+        cameraTool.tag = "DisabledMainCam";
     }
 
     private void PutCameraDown()
