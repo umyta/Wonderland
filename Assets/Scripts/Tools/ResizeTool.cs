@@ -79,7 +79,7 @@ public class ResizeTool : MonoBehaviour, ToolInterface
         {
             return;
         }
-
+        Debug.Log("Done using resizing tool!");
         resizing = false;
         SwitchViewPortToMainCamera();
         PutCameraDown();
