@@ -6,7 +6,7 @@ using System.Collections;
  * Attach this to a specific environment object in order to interact with them
  * individually.
  */
-public class MouseInteraction : MonoBehaviour
+public class MouseInteractionWithTool : MonoBehaviour
 {
     // A tool can be any of the defined tool script that implement ToolInterface.
     // e.g. ResizeTool, MagnetTool, SpringTool.
