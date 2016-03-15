@@ -2,9 +2,20 @@
 
 [RequireComponent(typeof(Animator))]
 [RequireComponent(typeof(Rigidbody))]
-public class PlayerMovement : MonoBehaviour
+public class MouseKeyboardCharacterControl : MonoBehaviour
 {
+    // Stores animation states for serialization.
+    public enum PlayerState
+    {
+        Idle,
+        Walking}
+
+    ;
+
+    public bool isControllable = false;
     public float speed = 6f;
+    public PlayerState state;
+
     Vector3 movement;
     Animator anim;
     Rigidbody playerRigidbody;
@@ -24,28 +35,33 @@ public class PlayerMovement : MonoBehaviour
     // Called for every physics update.
     void FixedUpdate()
     {
-        // Raw value will have -1, 0 or 1. Full speed right away more responsive.
-        float h = Input.GetAxisRaw("Horizontal"); 
-        float v = Input.GetAxisRaw("Vertical");
+        if (isControllable)
+        {
+            // Raw value will have -1, 0 or 1. Full speed right away more responsive.
+            float h = Input.GetAxisRaw("Horizontal"); 
+            float v = Input.GetAxisRaw("Vertical");
 
-        //detect menu activation
-        if (Input.GetMouseButtonDown(0))
-        {
-            openIngameUI();
+            //detect menu activation
+            if (Input.GetMouseButtonDown(0))
+            {
+                openIngameUI();
+            }
+            //if menu active, only allow menu operations
+            if (menuActive)
+            {
+                menuHighlight();
+            }
+            else
+            {
+                //player is allowed to move
+                Move(h, v);
+                Turning();
+                // Only sets the animation state.
+                Animating(h, v);
+            }
         }
-
-        //if menu active, only allow menu operations
-        if (menuActive)
-        {
-            menuHighlight();
-        }
-        else
-        {
-            //player is allowed to move
-            Move(h, v);
-            Turning();
-            Animating(h, v);
-        }
+        // Update animation no matter if it has been set remotely or locally.
+        UpdateAnimation();
     }
 
     void Move(float h, float v)
@@ -110,7 +126,26 @@ public class PlayerMovement : MonoBehaviour
     void Animating(float h, float v)
     {
         // If either h or v is not 0, the player is walking. 
-        bool walking = h != 0f || v != 0f;
-        anim.SetBool("IsWalking", walking); 
+        bool isWalking = h != 0f || v != 0f;
+        if (isWalking)
+        {
+            state = PlayerState.Walking;   
+        }
+        else
+        {
+            state = PlayerState.Idle;
+        }
+    }
+
+    void UpdateAnimation()
+    {
+        if (state == PlayerState.Walking)
+        {
+            anim.SetBool("IsWalking", true); 
+        }
+        else
+        {
+            anim.SetBool("IsWalking", false);
+        }
     }
 }
