@@ -9,11 +9,12 @@ using System.Collections;
 public class MenuUI : MonoBehaviour
 {
     public bool isActive = false;
+    public Transform playerMenuTransform;
     private const string EXIT = "Exit";
     private const string CLUE = "Clue";
     private const string TOOL = "Tool";
     private const string KEY = "Key";
-
+    private PlayerMenu playerMenu;
     // Use this for initialization
     void Awake()
     {
@@ -24,6 +25,7 @@ public class MenuUI : MonoBehaviour
             MeshRenderer mesh = menuItem.transform.GetComponentInChildren<MeshRenderer>();
             mesh.material.color = Color.white;
         }
+        playerMenu = playerMenuTransform.GetComponent<PlayerMenu>();
     }
 	
     // Update is called once per frame
@@ -37,7 +39,7 @@ public class MenuUI : MonoBehaviour
     {
         Debug.Log("Space opens the menu.");
         isActive = !isActive;
-        GameObject.Find("PlayerMenu").GetComponent<PlayerMenu>().SetActive(isActive);
+        playerMenu.SetActive(isActive);
     }
 
     public void HighlightItem(GameObject menuItem)

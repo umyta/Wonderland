@@ -30,8 +30,6 @@ public class PlayerMenu : MonoBehaviour
         StarObj = transform.Find("Clue");
         ToolObj = transform.Find("Tool");
         KeyObj = transform.Find("Key");
-        // TODO(Sylvia): Can we change these items to the UI canvas instead? So that they always appear in front of the main camera.
-        transform.parent = Camera.main.transform;
     }
 	
     // Update is called once per frame

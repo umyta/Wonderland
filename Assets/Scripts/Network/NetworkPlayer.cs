@@ -3,8 +3,8 @@ using System.Collections;
 
 public class NetworkPlayer : Photon.MonoBehaviour
 {
-    private Vector3 correctPlayerPos;
-    private Quaternion correctPlayerRot;
+    private Vector3 correctPlayerPos = Vector3.zero;
+    private Quaternion correctPlayerRot = Quaternion.identity;
 
     // Update is called once per frame
     void Update()
