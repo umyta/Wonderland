@@ -2,6 +2,7 @@
 
 [RequireComponent(typeof(Animator))]
 [RequireComponent(typeof(Rigidbody))]
+[RequireComponent(typeof(MenuUI))]
 public class MouseKeyboardCharacterControl : MonoBehaviour
 {
     // Stores animation states for serialization.
@@ -20,48 +21,36 @@ public class MouseKeyboardCharacterControl : MonoBehaviour
     Animator anim;
     Rigidbody playerRigidbody;
     int floorMask;
-    int UIMask;
-    float cameraRayLength = 100f;
-    bool menuActive;
+
+    MenuUI menu;
 
     void Awake()
     {
         floorMask = LayerMask.GetMask("Floor");
-        UIMask = LayerMask.GetMask("UI");
         anim = GetComponent<Animator>();
         playerRigidbody = GetComponent<Rigidbody>();
+        menu = GetComponent<MenuUI>();
     }
 
     // Called for every physics update.
     void FixedUpdate()
     {
+        // Only detects mouse movement if 
         if (isControllable)
         {
             // Raw value will have -1, 0 or 1. Full speed right away more responsive.
             float h = Input.GetAxisRaw("Horizontal"); 
             float v = Input.GetAxisRaw("Vertical");
 
-            //detect menu activation
-            if (Input.GetMouseButtonDown(0))
-            {
-                openIngameUI();
-            }
-            //if menu active, only allow menu operations
-            if (menuActive)
-            {
-                menuHighlight();
-            }
-            else
+            // Only give controls to movement when menu is not active.
+            if (!menu.isActive)
             {
                 //player is allowed to move
                 Move(h, v);
                 Turning();
-                // Only sets the animation state.
                 Animating(h, v);
             }
         }
-        // Update animation no matter if it has been set remotely or locally.
-        UpdateAnimation();
     }
 
     void Move(float h, float v)
@@ -74,52 +63,13 @@ public class MouseKeyboardCharacterControl : MonoBehaviour
 
     void Turning()
     {
-        Ray camRay = Camera.main.ScreenPointToRay(Input.mousePosition);
-        RaycastHit floorHit;
-        if (Physics.Raycast(camRay, out floorHit, cameraRayLength, floorMask))
+        RayCastReturnValue hitValue = HelperLibrary.RaycastObject(Input.mousePosition, floorMask);
+        if (hitValue.hitObject != null)
         {
-            Vector3 playerToMouse = floorHit.point - transform.position;
+            Vector3 playerToMouse = hitValue.hitPoint - transform.position;
             playerToMouse.y = 0.0f; // Make sure that they player does not move away from the floor
             Quaternion newRotation = Quaternion.LookRotation(playerToMouse * Time.deltaTime);
             playerRigidbody.MoveRotation(newRotation);
-        }
-    }
-
-    void menuHighlight()
-    {
-        GameObject[] menuItems = GameObject.FindGameObjectsWithTag("UI");
-        foreach (GameObject menuItem in menuItems)
-        {
-            MeshRenderer mesh = menuItem.transform.GetComponentInChildren<MeshRenderer>();
-            mesh.material.color = Color.white;
-        }
-        //Highlight hover items
-        Ray camRay = Camera.main.ScreenPointToRay(Input.mousePosition);
-        RaycastHit buttonHit = new RaycastHit();
-        if (Physics.Raycast(camRay, out buttonHit, cameraRayLength, UIMask))
-        {
-            MeshRenderer mesh = buttonHit.transform.GetComponentInChildren<MeshRenderer>();
-            mesh.material.color = Color.yellow;
-            Debug.Log("Hit a " + buttonHit.transform.gameObject.name);
-            if (buttonHit.transform.gameObject.name == "Exit")
-            {
-                buttonHit.transform.GetComponent<doorAnimation>().setAnimationActive();
-            }
-        }
-    }
-
-    void openIngameUI()
-    {
-        Ray camRay = Camera.main.ScreenPointToRay(Input.mousePosition);
-        RaycastHit playerHit = new RaycastHit();
-        if (Physics.Raycast(camRay, out playerHit, cameraRayLength))
-        {
-            if (playerHit.transform.gameObject.tag == "Player")
-            {
-                Debug.Log("Clicking on player. Should open menu...");
-                menuActive = !menuActive;
-                Camera.main.transform.Find("UI").GetComponent<UI>().setActive(menuActive);
-            }
         }
     }
 
@@ -135,9 +85,11 @@ public class MouseKeyboardCharacterControl : MonoBehaviour
         {
             state = PlayerState.Idle;
         }
+        SetAnimationState(state);
     }
 
-    void UpdateAnimation()
+    // Set triggers for animation.
+    public void SetAnimationState(PlayerState state)
     {
         if (state == PlayerState.Walking)
         {
@@ -147,5 +99,6 @@ public class MouseKeyboardCharacterControl : MonoBehaviour
         {
             anim.SetBool("IsWalking", false);
         }
+
     }
 }

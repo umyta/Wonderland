@@ -52,7 +52,7 @@ public class NetworkManager : Photon.PunBehaviour
             roomName, roomOptions, TypedLobby.Default);
     }
 
-    void OnJoinedRoom()
+    public override void OnJoinedRoom()
     {
         // Instantiate everything that every user should see here.
         GameObject player = PhotonNetwork.Instantiate(
@@ -60,12 +60,23 @@ public class NetworkManager : Photon.PunBehaviour
                                 spawnPopint.position,
                                 spawnPopint.rotation, 
                                 GROUP);
+        
+        // Instead of disabling componenets, we use a bool here to differentiate serialization.
+        GameObject camObj = GameObject.Find("StandbyCamera");
+        // Disable the main camera.
+        camObj.SetActive(false);
+
         // Enable player controllers.
         MouseKeyboardCharacterControl mkController = player.GetComponent<MouseKeyboardCharacterControl>();
-        // Instead of disabling componenets, we use a bool here to differentiate serialization.
         mkController.isControllable = true;
-        // Set camera to follow this player when it's my turn.
-        GameObject.FindObjectOfType<CameraFollow>().SetTarget(player.transform);
+        // Enable player camera.
+        foreach (Transform child in player.transform)
+        {
+            if (child.name == "PlayerCamera")
+            {
+                child.gameObject.SetActive(true);
+            }
+        }
     }
 
     void OnPhotonRandomJoinFailed()

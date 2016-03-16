@@ -20,7 +20,9 @@ namespace MoveServerNS
     public class MoveColor
     {
         public int r { get; set; }
+
         public int g { get; set; }
+
         public int b { get; set; }
 
         public MoveColor()
@@ -39,9 +41,10 @@ namespace MoveServerNS
         private int totalElements;
         private int currElement;
 
-        public SmoothedVector3 (int smoothingAmount)
+        public SmoothedVector3(int smoothingAmount)
         {
-            if (smoothingAmount < 1) throw new System.ArgumentException("Parameter must be larger than 0.", "smoothingAmount");
+            if (smoothingAmount < 1)
+                throw new System.ArgumentException("Parameter must be larger than 0.", "smoothingAmount");
             rawVectors = new Vector3[smoothingAmount];
             totalElements = smoothingAmount;
             currElement = 0;
@@ -59,7 +62,7 @@ namespace MoveServerNS
             if (smoothOkay)
             {
                 smoothedVector.Set(0, 0, 0);
-                for (int i = 0; i<totalElements;i++)
+                for (int i = 0; i < totalElements; i++)
                 {
                     smoothedVector.x += rawVectors[i].x;
                     smoothedVector.y += rawVectors[i].y;
@@ -77,10 +80,12 @@ namespace MoveServerNS
         }
     }
 
-    public class WinMoveController {
+    public class WinMoveController
+    {
 
         // A controller is considered active after a valid packet is received.
         public bool active { get; private set; }
+
         public int controllerNumber { get; private set; }
 
         // Raw data from Move.
@@ -105,11 +110,14 @@ namespace MoveServerNS
         private Vector3 accelerationSmoothed;
 
         public bool orientationEnabled { get; private set; }
+
         public MoveColor moveColor { get; set; }
 
         private double currTime_a = -1;
         private double currTime_b = -1;
+
         public double delta_t_a { get; private set; }
+
         public double delta_t_b { get; private set; }
 
         private byte prevButtons;
@@ -155,7 +163,8 @@ namespace MoveServerNS
             int c = int.Parse(physicalData[2]);
             if (c == controllerNumber)
             {
-                if (!active) active = true;
+                if (!active)
+                    active = true;
 
                 // Set our new values from the packet.
                 prevButtons = currButtons;
@@ -178,15 +187,16 @@ namespace MoveServerNS
 
                 // Process the new values.
                 double newTime = System.DateTime.Now.Ticks * .0000001;
-                if (currTime_a != -1) delta_t_a = newTime - currTime_a;
+                if (currTime_a != -1)
+                    delta_t_a = newTime - currTime_a;
                 currTime_a = newTime;
 
                 gyroscopeSmoothed.updateRaw(gyroscopeRaw);
                 accelerometerSmoothed.updateRaw(accelerometerRaw);
                 magnetometerSmoothed.updateRaw(magnetometerRaw);
 
-                pressedButtons = (byte)(pressedButtons|(~prevButtons & currButtons));
-                releasedButtons = (byte)(releasedButtons|(prevButtons & ~currButtons));
+                pressedButtons = (byte)(pressedButtons | (~prevButtons & currButtons));
+                releasedButtons = (byte)(releasedButtons | (prevButtons & ~currButtons));
 
                 return true;
             }
@@ -202,13 +212,14 @@ namespace MoveServerNS
             int c = int.Parse(positionData[2]);
             if (c == controllerNumber)
             {
-                if (!active) active = true;
+                if (!active)
+                    active = true;
                 // Used to set the controllers properties
 
                 // Set our new values from the packet.
                 Vector3 prevPosRaw = positionRaw;
 
-                positionRaw.Set(float.Parse(positionData[3])/100f, float.Parse(positionData[4]) / 100f, float.Parse(positionData[5]) / 100f);
+                positionRaw.Set(float.Parse(positionData[3]) / 100f, float.Parse(positionData[4]) / 100f, float.Parse(positionData[5]) / 100f);
                 //Debug.Log(positionRaw.ToString());
                 positionNorm.Set(float.Parse(positionData[6]), float.Parse(positionData[7]), 0);
 
@@ -216,7 +227,8 @@ namespace MoveServerNS
 
                 // Process the new values.
                 double newTime = System.DateTime.Now.Ticks * .0000001;
-                if (currTime_b != -1) delta_t_b = newTime - currTime_b;
+                if (currTime_b != -1)
+                    delta_t_b = newTime - currTime_b;
                 currTime_b = newTime;
 
                 // Store the last smoothed position for velocity calc.
@@ -227,7 +239,7 @@ namespace MoveServerNS
 
                 // Calculate velocity.
                 velocityRaw.Set((float)((positionRaw.x - prevPosRaw.x) / delta_t_b), (float)((positionRaw.x - prevPosRaw.x) / delta_t_b), (float)((positionRaw.x - prevPosRaw.x) / delta_t_b));
-                if (prevPosSmooth != null)
+                if (prevPosSmooth != Vector3.zero)
                 {
                     Vector3 posSmooth = positionSmoothed.getSmoothedVector();
                     velocitySmoothed.Set((float)((posSmooth.x - prevPosSmooth.x) / delta_t_b), (float)((posSmooth.x - prevPosSmooth.x) / delta_t_b), (float)((posSmooth.x - prevPosSmooth.x) / delta_t_b));
@@ -238,7 +250,7 @@ namespace MoveServerNS
         }
 
         // USED BY API ONLY.
-        // Used to clear the pressed and released button flags. 
+        // Used to clear the pressed and released button flags.
         // This allows us to sync the Unity loop with the receive thread.
         public void clearBtnFlags()
         {
@@ -247,41 +259,97 @@ namespace MoveServerNS
         }
 
         // ------ User GET functions ------
-        public Vector3 getGyroscopeRaw() { return gyroscopeRaw; }
-        public Vector3 getGyroscopeSmooth() { return gyroscopeSmoothed.getSmoothedVector(); }
-        public Vector3 getAccelerometerRaw() { return accelerometerRaw; }
-        public Vector3 getAccelerometerSmooth() { return accelerometerSmoothed.getSmoothedVector(); }
-        public Vector3 getMagnetometerRaw() { return magnetometerRaw; }
-        public Vector3 getMagnetometerSmooth() { return magnetometerSmoothed.getSmoothedVector(); ; }
-        public Quaternion getQuaternion() { return quaternion; }
-        public Vector3 getPositionRaw() { return positionRaw; }
-        public Vector3 getPositionSmooth() { return positionSmoothed.getSmoothedVector(); }
-        public Vector3 getPositionNorm() { return positionNorm; }
-        public Vector3 getPositionNormSmooth() { return positionNormSmooothed.getSmoothedVector();  }
-        public Vector3 getVelocityRaw(){ return velocityRaw; }
-        public Vector3 getVelocitySmooth() { return velocitySmoothed; }
+        public Vector3 getGyroscopeRaw()
+        {
+            return gyroscopeRaw;
+        }
+
+        public Vector3 getGyroscopeSmooth()
+        {
+            return gyroscopeSmoothed.getSmoothedVector();
+        }
+
+        public Vector3 getAccelerometerRaw()
+        {
+            return accelerometerRaw;
+        }
+
+        public Vector3 getAccelerometerSmooth()
+        {
+            return accelerometerSmoothed.getSmoothedVector();
+        }
+
+        public Vector3 getMagnetometerRaw()
+        {
+            return magnetometerRaw;
+        }
+
+        public Vector3 getMagnetometerSmooth()
+        {
+            return magnetometerSmoothed.getSmoothedVector();
+            ;
+        }
+
+        public Quaternion getQuaternion()
+        {
+            return quaternion;
+        }
+
+        public Vector3 getPositionRaw()
+        {
+            return positionRaw;
+        }
+
+        public Vector3 getPositionSmooth()
+        {
+            return positionSmoothed.getSmoothedVector();
+        }
+
+        public Vector3 getPositionNorm()
+        {
+            return positionNorm;
+        }
+
+        public Vector3 getPositionNormSmooth()
+        {
+            return positionNormSmooothed.getSmoothedVector();
+        }
+
+        public Vector3 getVelocityRaw()
+        {
+            return velocityRaw;
+        }
+
+        public Vector3 getVelocitySmooth()
+        {
+            return velocitySmoothed;
+        }
 
         public Boolean btnOnPress(MoveButton BTN_CODE)
         {
-            if (((byte)BTN_CODE & pressedButtons) != 0) return true;
+            if (((byte)BTN_CODE & pressedButtons) != 0)
+                return true;
             return false;
         }
 
         public Boolean btnOnRelease(MoveButton BTN_CODE)
         {
-            if (((byte)BTN_CODE & releasedButtons) != 0) return true;
+            if (((byte)BTN_CODE & releasedButtons) != 0)
+                return true;
             return false;
         }
 
         public Boolean btnPressed(MoveButton BTN_CODE)
         {
-            if (((byte)BTN_CODE & currButtons) != 0) return true;
+            if (((byte)BTN_CODE & currButtons) != 0)
+                return true;
             return false;
         }
 
         public Boolean btnReleased(MoveButton BTN_CODE)
         {
-            if (((byte)BTN_CODE & currButtons) == 0) return true;
+            if (((byte)BTN_CODE & currButtons) == 0)
+                return true;
             return false;
         }
 

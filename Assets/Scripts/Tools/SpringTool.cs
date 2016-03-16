@@ -3,20 +3,7 @@ using System.Collections;
 
 public class SpringTool : MonoBehaviour, ToolInterface
 {
-
-    // Use this for initialization
-    void Start()
-    {
-	
-    }
-	
-    // Update is called once per frame
-    void Update()
-    {
-	
-    }
-
-    public void TryUse()
+    public void Use(Transform player)
     {
         Debug.Log("Try to use Spring Tool");
     }

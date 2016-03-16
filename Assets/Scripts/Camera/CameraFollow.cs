@@ -12,9 +12,9 @@ public class CameraFollow : MonoBehaviour
     public float distance = 10.0f;
     // the height we want the camera to be above the target
     public float height = 5.0f;
-    // How much we
     public float heightDamping = 2.0f;
-    public float rotationDamping = 3.0f;
+    // How fast do we turn? The higher the number, the faster the turn.
+    public float rotationDamping = 1.0f;
 
     void LateUpdate()
     {

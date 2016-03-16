@@ -1,7 +1,8 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class UI : MonoBehaviour {
+public class PlayerMenu : MonoBehaviour
+{
     //Transform menu items
     private Transform LightObj;
     private Transform ExitObj;
@@ -9,10 +10,8 @@ public class UI : MonoBehaviour {
     private Transform ToolObj;
     private Transform KeyObj;
 
-    private bool isActive;
-
     //Destination
-    private Vector3 D1 = new Vector3 (-5f, 0f, 0f);
+    private Vector3 D1 = new Vector3(-5f, 0f, 0f);
     private Vector3 D2 = new Vector3(-2f, 0f, 0f);
     private Vector3 D3 = new Vector3(2f, 0f, 0f);
     private Vector3 D4 = new Vector3(5f, 0f, 0f);
@@ -23,23 +22,28 @@ public class UI : MonoBehaviour {
     private bool isOpenAnimationActive = false;
     private bool isCloseAnimationActive = false;
 
-	// Use this for initialization
-	void Awake () {
+    // Use this for initialization
+    void Awake()
+    {
         LightObj = transform.Find("Spotlight");
         ExitObj = transform.Find("Exit");
         StarObj = transform.Find("Clue");
         ToolObj = transform.Find("Tool");
         KeyObj = transform.Find("Key");
-	}
+        // TODO(Sylvia): Can we change these items to the UI canvas instead? So that they always appear in front of the main camera.
+        transform.parent = Camera.main.transform;
+    }
 	
-	// Update is called once per frame
-	void Update () {
-        openMenu();
-        closeMenu();
-	}
+    // Update is called once per frame
+    void Update()
+    {
+        OpenMenu();
+        CloseMenu();
+    }
 
     //not enabled right now
-    public void closeMenu() {
+    public void CloseMenu()
+    {
         if (isCloseAnimationActive)
         {
             if (count > 1.0f)
@@ -59,14 +63,17 @@ public class UI : MonoBehaviour {
     }
 
     //animation to open the menu
-    public void openMenu() {
-        if (isOpenAnimationActive) {
+    public void OpenMenu()
+    {
+        if (isOpenAnimationActive)
+        {
             if (count > 1.0f)
             {
                 count = 0.0f;
                 isOpenAnimationActive = false;
             }
-            else {
+            else
+            {
                 ExitObj.localPosition = Vector3.Lerp(startLocation, D1, count);
                 StarObj.localPosition = Vector3.Lerp(startLocation, D2, count);
                 ToolObj.localPosition = Vector3.Lerp(startLocation, D3, count);
@@ -77,9 +84,9 @@ public class UI : MonoBehaviour {
     }
 
     //set menu items active or inactive
-    public void setActive(bool isActive) {
+    public void SetActive(bool isActive)
+    {
         Debug.Log("Menu active set to " + isActive);
-        this.isActive = isActive;
         LightObj.gameObject.SetActive(isActive);
         ExitObj.gameObject.SetActive(isActive);
         ToolObj.gameObject.SetActive(isActive);
@@ -92,7 +99,8 @@ public class UI : MonoBehaviour {
             isOpenAnimationActive = true;
         }
         //close animation is not enabled right now
-        else {
+        else
+        {
             count = 0.0f;
             isCloseAnimationActive = true;
         }

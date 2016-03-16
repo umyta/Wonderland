@@ -35,7 +35,7 @@ public class NetworkPlayer : Photon.MonoBehaviour
             this.correctPlayerRot = (Quaternion)stream.ReceiveNext();
             // Interpret animations from the network.
             MouseKeyboardCharacterControl myC = GetComponent<MouseKeyboardCharacterControl>();
-            myC.state = (MouseKeyboardCharacterControl.PlayerState)stream.ReceiveNext();
+            myC.SetAnimationState((MouseKeyboardCharacterControl.PlayerState)stream.ReceiveNext());
         }
     }
 }
