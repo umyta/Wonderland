@@ -83,7 +83,9 @@ public class ResizeTool : MonoBehaviour, ToolInterface
 
     private void ResizeTarget(float scale)
     {
-        GameLogic.ResizeTarget(target, scale);
+        Debug.Log("ResizeTarget: " + target.name);
+        target.GetComponent<PhotonView>().RPC("Resize", PhotonTargets.All, scale);
+       
     }
 
     // Enable first person view, and make this tool start following the player.

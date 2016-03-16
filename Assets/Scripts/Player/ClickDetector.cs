@@ -105,6 +105,7 @@ public class ClickDetector : MonoBehaviour
         {
             // if this player is not "controlling the resizing tool", 
             // the player can't tag anyone, so don't do anything on collision
+            Debug.Log(PhotonNetwork.player.ID + " is resizing.");
             if (PhotonNetwork.player.ID == GameLogic.playerWhoIsUsingResizeTool
                 && toolMap.ContainsKey(GameLogic.resizeTool))
             {
@@ -115,6 +116,8 @@ public class ClickDetector : MonoBehaviour
                 GameLogic.TagResizeTarget(rootView.owner.ID);
                 ToolInterface tool = toolMap[GameLogic.resizeTool].GetComponent<ResizeTool>();
                 tool.SetTarget(mousePointedAt.transform);
+
+//                Debug.Log("Set resize target to " + rootView.owner.ID);
             }
             else if (PhotonNetwork.player.ID == GameLogic.playerWhoIsUsingSpringTool)
             {
@@ -150,7 +153,9 @@ public class ClickDetector : MonoBehaviour
         {
             // Get the tool and start resize its target.
             ToolInterface tool = toolMap[GameLogic.resizeTool].GetComponent<ResizeTool>();
+
             tool.Perform(Input.mousePosition.y);
+
         }
     }
 }

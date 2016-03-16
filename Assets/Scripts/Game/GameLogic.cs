@@ -66,12 +66,6 @@ public class GameLogic : MonoBehaviour
         ScenePhotonView.RPC("TaggedMagnetTarget", PhotonTargets.All, playerID);
     }
 
-    public static void ResizeTarget(Transform target, float size)
-    {
-        Debug.Log("ResizeTarget: ");
-        ScenePhotonView.RPC("Resize", PhotonTargets.All, target, size);
-    }
-
     #endregion
 
     // If a player is disconnected, reset the player who is using the resize
@@ -101,7 +95,7 @@ public class GameLogic : MonoBehaviour
     {
         playerWhoIsUsingResizeTool = playerID;
         resizeTool = toolID;
-        Debug.Log("TaggedResizePlayer: " + playerID);
+        Debug.Log("TaggedResizePlayer: " + playerID + " using tool " + toolID);
     }
 
     [PunRPC]
@@ -139,17 +133,6 @@ public class GameLogic : MonoBehaviour
     {
         playerWhoIsBeingMagnetized = playerID;
         Debug.Log("TaggedPlayerBeingMagnetized: " + playerID);
-    }
-
-    [PunRPC]
-    public void Resize(Transform target, float scale)
-    {
-        // TODO(sainan): we are currently relying on network serilization to sync this.
-        // We'll see if this works or do we need RPC calls.
-        target.localScale = new Vector3(
-            target.localScale.x * scale, 
-            target.localScale.y * scale, 
-            target.localScale.z * scale);
     }
 
     #endregion
