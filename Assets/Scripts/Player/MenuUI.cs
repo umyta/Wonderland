@@ -28,12 +28,6 @@ public class MenuUI : MonoBehaviour
         playerMenu = playerMenuTransform.GetComponent<PlayerMenu>();
     }
 	
-    // Update is called once per frame
-    void FixedUpdate()
-    {
-        
-    }
-
     // Open arm menu.
     public void ToggleMenu()
     {

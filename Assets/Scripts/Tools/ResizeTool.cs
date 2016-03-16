@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
+[RequireComponent((typeof(PhotonView)))]
 public class ResizeTool : MonoBehaviour, ToolInterface
 {
     // The user is the one that controls the camera
@@ -9,6 +10,7 @@ public class ResizeTool : MonoBehaviour, ToolInterface
     private Camera standbyCamera;
     private Camera cameraTool;
     private Transform user;
+    private Transform target;
     private Collider[] colliders;
     // The distance in the x-z plane to the target
     public float distance = 5.0f;
@@ -20,6 +22,8 @@ public class ResizeTool : MonoBehaviour, ToolInterface
 
     private Vector3 originalPose;
     // Use this for initialization
+    private static PhotonView ScenePhotonView;
+
     void Start()
     {
         cameraToolTransform.gameObject.SetActive(false);
@@ -28,6 +32,8 @@ public class ResizeTool : MonoBehaviour, ToolInterface
         colliders = transform.GetComponents<Collider>();
         originalPose = transform.position;
     }
+
+
 
     // Detects if a tool is found by a user.
     void OnTriggerEnter(Collider other)
@@ -62,6 +68,22 @@ public class ResizeTool : MonoBehaviour, ToolInterface
         // Turn off collider to allow user to hold the camera.
         SetAllColliders(true);
         user = null;
+    }
+
+    // Set the target of the resize tool
+    public void SetTarget(Transform target)
+    {
+        this.target = target;
+    }
+
+    public void Perform(float scale)
+    {
+        ResizeTarget(scale);
+    }
+
+    private void ResizeTarget(float scale)
+    {
+        GameLogic.ResizeTarget(target, scale);
     }
 
     // Enable first person view, and make this tool start following the player.
@@ -155,6 +177,14 @@ public class ResizeTool : MonoBehaviour, ToolInterface
         transform.position = new Vector3(transform.position.x, currentHeight, transform.position.z);
 
         // Always look at the target's head
-        transform.LookAt(user.position + user.forward * distance * 2 + user.up * 5.0f);
+        if (target != null)
+        {
+            transform.LookAt(target.position + user.up * 5.0f);
+        }
+        else
+        {
+            // If there is no target yet, look at a bit forward of the camera/user position.
+            transform.LookAt(user.position + user.forward * distance * 2 + user.up * 5.0f);
+        }
     }
 }

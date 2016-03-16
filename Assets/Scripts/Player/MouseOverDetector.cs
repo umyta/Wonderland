@@ -6,6 +6,7 @@ public class MouseOverDetector : MonoBehaviour
 {
     int UIMask;
     MenuUI menu;
+    public bool isControllable = false;
     // Use this for initialization
     void Awake()
     {
@@ -17,7 +18,8 @@ public class MouseOverDetector : MonoBehaviour
     void Update()
     {  
         GameObject mousePointedAt = HelperLibrary.RaycastObject(Input.mousePosition, UIMask).hitObject;
-        if (mousePointedAt != null)
+        if (isControllable && menu.playerMenuTransform.gameObject.activeSelf
+            && mousePointedAt != null)
         {
             menu.HighlightItem(mousePointedAt);
         }

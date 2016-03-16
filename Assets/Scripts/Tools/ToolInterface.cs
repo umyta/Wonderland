@@ -8,5 +8,10 @@ public interface ToolInterface
     void Use(Transform player);
     // Change back to normal view if the tool was in use.
     void Done();
+    // SetTarget.
+    void SetTarget(Transform target);
+    // Perform what this tool is built for.
+    void Perform(float input);
+
 }
 
