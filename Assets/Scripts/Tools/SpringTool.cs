@@ -12,4 +12,14 @@ public class SpringTool : MonoBehaviour, ToolInterface
     {
         Debug.Log("Done using Spring Tool");
     }
+
+    public void SetTarget(Transform target)
+    {
+
+    }
+
+    public void Perform(float force)
+    {
+
+    }
 }

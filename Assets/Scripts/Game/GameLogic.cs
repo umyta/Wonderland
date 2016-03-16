@@ -95,7 +95,7 @@ public class GameLogic : MonoBehaviour
     {
         playerWhoIsUsingResizeTool = playerID;
         resizeTool = toolID;
-        Debug.Log("TaggedResizePlayer: " + playerID);
+        Debug.Log("TaggedResizePlayer: " + playerID + " using tool " + toolID);
     }
 
     [PunRPC]

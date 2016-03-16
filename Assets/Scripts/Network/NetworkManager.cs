@@ -63,12 +63,21 @@ public class NetworkManager : Photon.PunBehaviour
         
         // Instead of disabling componenets, we use a bool here to differentiate serialization.
         GameObject camObj = GameObject.Find("StandbyCamera");
+        // Set to follow the player.
+        CameraFollow follow = camObj.GetComponent<CameraFollow>();
+        follow.SetTarget(player.transform);
         // Disable the main camera.
         camObj.SetActive(false);
-
         // Enable player controllers.
         MouseKeyboardCharacterControl mkController = player.GetComponent<MouseKeyboardCharacterControl>();
+
+        ClickDetector cDetector = player.GetComponent<ClickDetector>();
+        KeyDetector kDetector = player.GetComponent<KeyDetector>();
+        MouseOverDetector moDetector = player.GetComponent<MouseOverDetector>();
         mkController.isControllable = true;
+        cDetector.isControllable = true;
+        kDetector.isControllable = true;
+        moDetector.isControllable = true;
         // Enable player camera.
         foreach (Transform child in player.transform)
         {

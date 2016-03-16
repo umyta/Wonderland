@@ -9,6 +9,7 @@ using System.Collections.Generic;
 [RequireComponent(typeof(MenuUI))]
 public class KeyDetector : MonoBehaviour
 {
+    public bool isControllable = false;
     Dictionary<int, GameObject> toolMap = new Dictionary<int, GameObject>();
     PhotonView photonView;
     MenuUI menu;
@@ -40,12 +41,12 @@ public class KeyDetector : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Home))
+        if (isControllable && Input.GetKeyDown(KeyCode.Home))
         {
             CheckKeyExit();
         }
 
-        if (Input.GetKeyDown(KeyCode.Space))
+        if (isControllable && Input.GetKeyDown(KeyCode.Space))
         {
             Debug.Log("Space key is pressed");
             CheckMenu();

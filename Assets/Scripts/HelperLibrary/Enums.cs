@@ -1,15 +1,10 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class Enums : MonoBehaviour {
+// Stores animation states for serialization.
+public enum PlayerState
+{
+    Idle,
+    Walking}
 
-	// Use this for initialization
-	void Start () {
-	
-	}
-	
-	// Update is called once per frame
-	void Update () {
-	
-	}
-}
+;

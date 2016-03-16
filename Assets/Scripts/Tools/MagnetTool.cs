@@ -12,4 +12,14 @@ public class MagnetTool : MonoBehaviour, ToolInterface
     {
         Debug.Log("Done using Magnet Tool");
     }
+
+    public void SetTarget(Transform target)
+    {
+        
+    }
+
+    public void Perform(float force)
+    {
+        
+    }
 }
