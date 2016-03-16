@@ -10,27 +10,27 @@ public class Level01WinController : MonoBehaviour, MotionController
     public enum PlayerState
     {
         Idle,
-        Walking}
+        Walking,
+        UI}
 
     ;
     //Windows Server
     public WinMoveServer moveServer;
     [Range(1, 6)]
     public int controller;
-    public GameObject controlBall;
+    //public GameObject controlBall;
     public PlayerState state;
-    public bool isControllable = false;
+    public bool isControllable = true;
 
     //UI
-    private Vector3 worldControllerInitPos;
-    // TODO(sylvia): this is never used, commented out to surpress warning.
-    //private Quaternion worldControllerInitRot;
     private Vector3 actualControllerPrevPos;
     private bool setUIInitial;
+    private Transform moveCursor;
+    private float SCALE = 15.0f;
+    private Vector3 delta;
 
     //Player Movement
     public float speed = 6f;
-    Vector3 movement;
     Animator anim;
     Rigidbody playerRigidbody;
     //int floorMask;
@@ -38,9 +38,6 @@ public class Level01WinController : MonoBehaviour, MotionController
 
     //Walk
     private Vector3 initialPos;
-    //TODO(sylvia): this is never used, and is causing warnings, commented out to supress warning.
-    // private Quaternion initialRot;
-    private bool setInitial = false;
     private const float SPEED = 0.1f;
 
     // Use this for initialization
@@ -50,9 +47,9 @@ public class Level01WinController : MonoBehaviour, MotionController
         controller = 1;
         anim = GetComponent<Animator>();
         playerRigidbody = GetComponent<Rigidbody>();
-        worldControllerInitPos = Camera.main.transform.position;
+        setUIInitial = false;
     }
-	
+
     // Update is called once per frame
     public void FixedUpdate()
     {
@@ -68,54 +65,80 @@ public class Level01WinController : MonoBehaviour, MotionController
 
             Quaternion moveAngle = move.getQuaternion();
 
-            //=================UI System======================//
             if (!setUIInitial)
             {
-                //setInitialPos(actualControllerCurrPos, moveAngle, worldControllerInitPos, worldControllerInitRot, setUIInitial);
-                worldControllerInitPos = Camera.main.transform.position + Camera.main.transform.forward;
-                // TODO(sylvia):Never used: commented out to surpress warning.
-                // worldControllerInitRot = Quaternion.identity;
                 setUIInitial = true;
                 actualControllerPrevPos = actualControllerCurrPos;
             }
             else
             {
-                Vector3 delta = actualControllerCurrPos - actualControllerPrevPos;
-                worldControllerInitPos += delta * 10;
-                controlBall.transform.position = worldControllerInitPos;
-                //actualControllerPrevPos = actualControllerCurrPos;
-                //Debug.Log("Delta is " + delta.x + " " + delta.y + " " + delta.z);
-
+                delta = actualControllerCurrPos - actualControllerPrevPos;
+                delta += transform.forward * delta.z;
+                delta += transform.up * delta.y;
+                delta += transform.right * delta.x;
+                delta.z = -delta.z;
+                
                 RaycastHit hit = new RaycastHit();
-                Debug.DrawRay(Camera.main.transform.position, delta * 100, Color.green, Time.deltaTime, true);
-                if (Physics.Raycast(Camera.main.transform.position, delta * 100, out hit, 100))
+
+                //If object is at the center, it is available
+                if (Physics.SphereCast(Camera.main.ScreenPointToRay(new Vector3(Camera.main.pixelWidth/2, Camera.main.pixelHeight/2, 0)), 0, out hit, 100))
                 {
-                    Debug.Log("Player hit " + hit.transform.gameObject.name);
+                    //Debug.Log("Player hit " + hit.transform.gameObject.name);
+                }
+                actualControllerPrevPos = actualControllerCurrPos;
+            }
+
+            //=================UI System======================//
+            /* Update move cursor */
+            if (moveCursor == null)
+            {
+                moveCursor = Camera.main.transform.FindChild("MoveCursor");
+                moveCursor.forward = Camera.main.transform.forward;
+                moveCursor.up = Camera.main.transform.up;
+                moveCursor.right = Camera.main.transform.right;
+            }
+
+            moveCursor.localPosition += delta * SCALE;
+
+            /* Check move cursor to screen position */
+            Vector3 cursorPosToScreen = Camera.main.WorldToScreenPoint(moveCursor.position);
+
+            //Press move button on right top of screen will trigger menu
+            if (cursorPosToScreen.x > Camera.main.pixelWidth * 4f / 5f &&
+                cursorPosToScreen.y > Camera.main.pixelHeight * 4f / 5f)
+            {
+                if (move.btnOnRelease(MoveButton.BTN_MOVE))
+                {
+                    MenuUI menuUIScript = Transform.FindObjectOfType<MenuUI>();
+                    menuUIScript.ToggleMenu();
                 }
             }
-           
-            
+
             //=================Allow player to move===========//
             //calculate delta position of move controller
-            if (move.btnPressed(MoveButton.BTN_MOVE))
+            else if (move.btnOnPress(MoveButton.BTN_MOVE))
+            {
+                setInitialPos(actualControllerCurrPos, moveAngle);
+            }
+            else if (move.btnPressed(MoveButton.BTN_MOVE))
             {
                 //set initial position and rotation
-                if (!setInitial)
+                Vector3 deltaPos = actualControllerCurrPos - initialPos;
+                deltaPos = deltaPos.normalized * SPEED;
+                deltaPos.z = -deltaPos.z;
+
+                //Turning, moving, animating, etc.
+                if (move.triggerValue > 0)
                 {
-                    setInitialPos(actualControllerCurrPos, moveAngle);
+                    deltaPos.y = 0;
+                    Move(deltaPos);
                 }
                 else
                 {
-                    Vector3 deltaPos = actualControllerCurrPos - initialPos;
-                    deltaPos = deltaPos.normalized * SPEED;
-                    deltaPos.y = 0;
-                    deltaPos.z = -deltaPos.z;
-
-                    //Turning, moving, animating, etc.
-                    Move(deltaPos);
-                    //Turning(deltaPos);
-                    Animating(deltaPos);
+                    Turning(deltaPos);
                 }
+
+                Animating(deltaPos);            
             }
         }
     }
@@ -123,19 +146,30 @@ public class Level01WinController : MonoBehaviour, MotionController
     public void setInitialPos(Vector3 pos, Quaternion angle)
     {
         initialPos = pos;
-        // TODO(sylvia): this is never used.        initialRot = angle;
-        setInitial = true;
     }
 
     public void Move(Vector3 deltaPos)
     {
-        playerRigidbody.MovePosition(transform.position + deltaPos);
+        playerRigidbody.MovePosition(transform.position + 
+            transform.forward * deltaPos.z 
+            + transform.right * deltaPos.x + 
+            transform.up * deltaPos.y);
     }
 
     public void Turning(Vector3 deltaPos)
     {
-        Quaternion newAngle = Quaternion.LookRotation(deltaPos);
-        playerRigidbody.MoveRotation(Quaternion.Lerp(transform.rotation, transform.rotation * newAngle, Time.deltaTime));
+        deltaPos = deltaPos.normalized;
+        //Rotate camera around x axis, player around y axis
+        if (Mathf.Abs(deltaPos.y) > Mathf.Abs(deltaPos.x))
+        {
+            Camera.main.transform.Rotate(-deltaPos.y, 0, 0);
+        }
+        else
+        {
+            Quaternion newAngle = Quaternion.LookRotation(new Vector3(deltaPos.x, 0, 0));
+            playerRigidbody.MoveRotation(Quaternion.Lerp(transform.rotation, 
+                transform.rotation * newAngle, Time.deltaTime));
+        }
     }
 
     public void Animating(Vector3 deltaPos)
