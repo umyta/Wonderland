@@ -41,6 +41,7 @@ public class MenuUI : MonoBehaviour
 
     public void displayClue(ClueState clueState)
     {
+        Debug.Log("Clue state is " + clueState);
         playerMenu.displayClue(clueState);
     }
 	
@@ -82,7 +83,6 @@ public class MenuUI : MonoBehaviour
                 break;
             case CLUE:
                 displayClue(clueStatesScript.GetClueState());
-                Debug.Log("TODO(sylvia): STAR needs to be implemented!");
                 break;
             case TOOL:
                 Debug.Log("Tool item is selected, not sure if we need this.");

@@ -41,6 +41,12 @@ public class Level01WinController : MonoBehaviour, MotionController
     int combinedMask;
     int playerID = GameLogic.InvalidPlayerId;
     float initialY;
+    float startHeight = 0.0f;
+    float endHeight = 0.0f;
+    // The max is about 36, min is 0.2 and player is 10, which is roughly 0.273
+    // because 0.2 + 0.28*(36-0.2) ~= 10
+    float defaultResize = 0.273f;
+    Scaler scalerScript;
 
     //Clues
     ClueState clueState = ClueState.None;
@@ -70,8 +76,14 @@ public class Level01WinController : MonoBehaviour, MotionController
         menuUIScript = GetComponent<MenuUI>();
         playerCamera = GetComponent<Camera>();
         clueStateScript = GetComponent<ClueStates>();
+        scalerScript = FindObjectOfType<Scaler>();
         toolMap = HelperLibrary.GetAllToolsInScene();
         moveCursorInitPos = moveCursor.transform.localPosition;
+
+        playerMask = LayerMask.GetMask("Player");
+        toolMask = LayerMask.GetMask("Tool");
+        menuUIMask = LayerMask.GetMask("UI");
+        combinedMask = playerMask | toolMask | menuUIMask;
     }
 
     // Update is called once per frame
@@ -151,14 +163,33 @@ public class Level01WinController : MonoBehaviour, MotionController
             }
 
             /* Tool operations */
-            if (toolState == PlayerState.Tool && move.btnOnPress(MoveButton.BTN_MOVE))
-                initialY = moveCursor.position.y;
-            else if (toolState == PlayerState.Tool && move.btnPressed(MoveButton.BTN_MOVE))
-            {
-                CheckToolPerform(moveCursor.position.y / initialY);
-                Debug.Log("Scaling at " + moveCursor.position.y / initialY);
+            if (toolState == PlayerState.Tool) {
+                if (move.btnOnPress(MoveButton.BTN_MOVE))
+                {
+                    initialY = moveCursor.position.y;
+                    // When long press, we only want to hit players.
+                    RayCastReturnValue mousePointedAt1 = HelperLibrary.WorldToScreenRaycast(moveCursor.position, playerCamera, 1000, playerMask);
+                    GameObject hitGameObj = mousePointedAt1.hitObject;
+                    if (hitGameObj != null && hitGameObj != this.gameObject)
+                    {
+                        Debug.Log("hit " + hitGameObj.name);
+                        CheckToolPerform(hitGameObj);
+                    }
+                } 
+                else if (move.btnPressed(MoveButton.BTN_MOVE))
+                {
+                    UpdateToolPerform();
+                }
+                else if (move.btnOnRelease(MoveButton.BTN_MOVE))
+                {
+                    // Reset the stored mouse interaction for drag.
+                    if (startHeight > 0.0001f || endHeight > 0.0001f)
+                    {
+                        startHeight = 0.0f;
+                        endHeight = 0.0f;
+                    }
+                }
             }
-
 
             /* Player Movement */
             if (!UIActive)
@@ -242,6 +273,7 @@ public class Level01WinController : MonoBehaviour, MotionController
                 clueState = ClueState.Clue1;
                 clueStateScript.SetClueState(clueState);
             }
+            scalerScript.setActive(true);
         }
         else if (hitGameObj.CompareTag("SpringTool")
                  && GameLogic.playerWhoIsUsingSpringTool == GameLogic.InvalidPlayerId)
@@ -306,16 +338,49 @@ public class Level01WinController : MonoBehaviour, MotionController
         tool.SetTarget(hitGameObj.transform);
     }
 
-    private void CheckToolPerform(float scale)
+    private void CheckToolPerform(GameObject hitGameObj)
     {
-        if (PhotonNetwork.player.ID == GameLogic.playerWhoIsUsingResizeTool
+        // Check if the player is operating on some other player.
+        if (playerID == GameLogic.playerWhoIsUsingResizeTool
             && toolMap.ContainsKey(GameLogic.resizeTool))
         {
+            if (GameLogic.playerWhoIsBeingResized == GameLogic.InvalidPlayerId)
+            {
+                // The short click was not detected, so we set the resize target before we resize.
+                SetResizeTarget(hitGameObj);
+            }
+
+            startHeight = playerCamera.WorldToScreenPoint(moveCursor.position).y;
+        }
+    }
+
+    private void UpdateToolPerform()
+    {
+        if (playerID != GameLogic.InvalidPlayerId && playerID == GameLogic.playerWhoIsUsingResizeTool
+            && GameLogic.playerWhoIsBeingResized != GameLogic.InvalidPlayerId && toolMap.ContainsKey(GameLogic.resizeTool)
+            && startHeight != 0.0f)
+        {
+            endHeight = playerCamera.WorldToScreenPoint(moveCursor.position).y;
+            // Scale this number down to [-1, 1].
+            float scrollSpeed = (endHeight - startHeight) / Screen.height;
+            Debug.Log("Scrolling at speed" + scrollSpeed);
+            float scaleFactor = defaultResize + scrollSpeed;
+            if (scaleFactor < 0)
+            {
+                scaleFactor = 0.0f;
+            }
+            if (scaleFactor > 1)
+            {
+                scaleFactor = 1.0f;
+            }
+
             // Get the tool and start resize its target.
             ToolInterface tool = toolMap[GameLogic.resizeTool].GetComponent<ResizeTool>();
 
-            tool.TryPerform(scale);
+            // TryPerform takes in a number between 0 and 1. 0 being the smallest scaling factor available on screen.
+            tool.TryPerform(scaleFactor);
         }
+
     }
 
     private void CheckKeyExit()
@@ -329,6 +394,8 @@ public class Level01WinController : MonoBehaviour, MotionController
             GameLogic.TagResizePlayer(GameLogic.InvalidPlayerId, GameLogic.InvalidToolId);
         }
         toolState = PlayerState.Idle;
+        scalerScript.setActive(false);
+
         // TODO(sainan): setup the exit logic for other tools.
     }
 
