@@ -22,6 +22,7 @@ public class Level01WinController : MonoBehaviour, MotionController
     public int controller;
     //public GameObject controlBall;
     public PlayerState state;
+    public PlayerState toolState = PlayerState.Idle;
     public bool isControllable = false;
 
     //UI
@@ -39,6 +40,7 @@ public class Level01WinController : MonoBehaviour, MotionController
     int menuUIMask;
     int combinedMask;
     int playerID = GameLogic.InvalidPlayerId;
+    float initialY;
 
     //Player Movement
     public float speed = 6f;
@@ -112,19 +114,33 @@ public class Level01WinController : MonoBehaviour, MotionController
                 moveCursor.position += delta * SCALE;
             }
 
-            RayCastReturnValue mousePointedAt = HelperLibrary.WorldToScreenRaycast(moveCursor.position, playerCamera, 1000);
-            GameObject hitObject = mousePointedAt.hitObject;
-
-            /* Trigger functions */
+            /* Trigger function: either exit tool or reset move cursor */
             if (move.triggerValue > 0)
             {
+                if (toolState == PlayerState.Tool)
+                {
+                    Debug.Log("End using camera.");
+                    CheckKeyExit();
+                }
+                else
+                {
+                    moveCursor.localPosition = moveCursorInitPos;
+                    moveCursor.transform.forward = playerCamera.transform.forward;
+                }
+            }
 
-                moveCursor.localPosition = moveCursorInitPos;
-                moveCursor.transform.forward = playerCamera.transform.forward;
+            /* Exit menu */
+            if (HelperLibrary.isTopRight(moveCursor.position, playerCamera))
+            {
+                CheckMenuActive(move);
+                return;
             }
 
             /* Hover */
             CheckHoverOverMenuItems();
+
+            RayCastReturnValue mousePointedAt = HelperLibrary.WorldToScreenRaycast(moveCursor.position, playerCamera, 1000);
+            GameObject hitObject = mousePointedAt.hitObject;            
 
             if (hitObject != null && hitObject != this.gameObject && move.btnOnRelease(MoveButton.BTN_MOVE))
             {
@@ -133,12 +149,18 @@ public class Level01WinController : MonoBehaviour, MotionController
                 CheckToolClick(hitObject);
             }
 
-            /* Toggle open and close menu */
-            if (move.btnOnRelease(MoveButton.BTN_MOVE))
+            /* Tool operations */
+            if (toolState == PlayerState.Tool && move.btnOnPress(MoveButton.BTN_MOVE))
+                initialY = moveCursor.position.y;
+            else if (toolState == PlayerState.Tool && move.btnPressed(MoveButton.BTN_MOVE))
             {
-                CheckMenuActive(move);
+                CheckToolPerform(moveCursor.position.y / initialY);
+                Debug.Log("Scaling at " + moveCursor.position.y / initialY);
             }
-            else if (!UIActive)
+
+
+            /* Player Movement */
+            if (!UIActive)
             {
                 CheckPlayerMovement(move, actualControllerCurrPos);
             }
@@ -196,11 +218,8 @@ public class Level01WinController : MonoBehaviour, MotionController
 
     private void CheckMenuActive(WinMoveController move)
     {
-        if (HelperLibrary.isTopRight(moveCursor.position, playerCamera))
-        {
-            menuUIScript.ToggleMenu();
-            UIActive = menuUIScript.isActive;
-        }
+       menuUIScript.ToggleMenu();
+       UIActive = menuUIScript.isActive;
     }
 
     /********************Tools***********************************/
@@ -216,6 +235,7 @@ public class Level01WinController : MonoBehaviour, MotionController
             // Game logic stores unique ids for the player and the tool.
             GameLogic.TagResizePlayer(playerID, hitGameObj.GetInstanceID());
             tool.Use(transform);
+            toolState = PlayerState.Tool;
         }
         else if (hitGameObj.CompareTag("SpringTool")
                  && GameLogic.playerWhoIsUsingSpringTool == GameLogic.InvalidPlayerId)
@@ -224,6 +244,7 @@ public class Level01WinController : MonoBehaviour, MotionController
             // This player uses this tool.
             ToolInterface tool = hitGameObj.transform.GetComponent<ToolInterface>();
             tool.Use(transform);
+            toolState = PlayerState.Tool;
         }
         else if (hitGameObj.CompareTag("MagnetTool")
                  && GameLogic.playerWhoIsUsingMagnetTool == GameLogic.InvalidPlayerId)
@@ -232,6 +253,7 @@ public class Level01WinController : MonoBehaviour, MotionController
             // This player uses this tool.
             ToolInterface tool = hitGameObj.transform.GetComponent<ToolInterface>();
             tool.Use(transform);
+            toolState = PlayerState.Tool;
         }
     }
 
@@ -278,7 +300,7 @@ public class Level01WinController : MonoBehaviour, MotionController
         tool.SetTarget(hitGameObj.transform);
     }
 
-    private void CheckToolPerform()
+    private void CheckToolPerform(float scale)
     {
         if (PhotonNetwork.player.ID == GameLogic.playerWhoIsUsingResizeTool
             && toolMap.ContainsKey(GameLogic.resizeTool))
@@ -286,8 +308,22 @@ public class Level01WinController : MonoBehaviour, MotionController
             // Get the tool and start resize its target.
             ToolInterface tool = toolMap[GameLogic.resizeTool].GetComponent<ResizeTool>();
 
-            tool.TryPerform(Input.mousePosition.y);
+            tool.TryPerform(scale);
         }
+    }
+
+    private void CheckKeyExit()
+    {
+        // Does this current player controls a resize tool.
+        if (GameLogic.playerWhoIsUsingResizeTool != PhotonNetwork.player.ID
+            && toolMap.ContainsKey(GameLogic.resizeTool))
+        {
+            toolMap[GameLogic.resizeTool].GetComponent<ResizeTool>().Done();
+            // Reset game logic for resizeing.
+            GameLogic.TagResizePlayer(GameLogic.InvalidPlayerId, GameLogic.InvalidToolId);
+        }
+        state = PlayerState.Idle;
+        // TODO(sainan): setup the exit logic for other tools.
     }
 
     /**********************Movement Control********************/

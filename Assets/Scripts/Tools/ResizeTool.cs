@@ -124,6 +124,11 @@ public class ResizeTool : MonoBehaviour, ToolInterface
             return;
         }
         UpdateTargetOriginalSize();
+
+        // UI.
+        Scaler scalerScript = FindObjectOfType<Scaler>();
+        scalerScript.scale(scale);
+
         AdjustedScaleFactor(scale); // Set scaling factor.
         Debug.Log("Trying to resize " + targetOriginalSize + " to " + status.factor * targetOriginalSize);
         status.targetTransform.GetComponent<PhotonView>().RPC("Resize", PhotonTargets.All, status.factor); 
