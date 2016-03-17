@@ -18,38 +18,7 @@ public class FollowPlayer : MonoBehaviour
         {
             return;
         }
-
-        // Calculate the current rotation angles
-        //      float wantedRotationAngle = user.eulerAngles.y;
-        float wantedHeight = user.position.y + height;
-
-        //        float currentRotationAngle = transform.eulerAngles.y;
-        float currentHeight = transform.position.y;
-
-        //        // Damp the rotation around the y-axis
-        //        currentRotationAngle = Mathf.LerpAngle(currentRotationAngle, wantedRotationAngle, rotationDamping * Time.deltaTime);
-
-        // Damp the height
-        currentHeight = Mathf.Lerp(currentHeight, wantedHeight, heightDamping * Time.deltaTime);
-
-        //        // Convert the angle into a rotation
-        //        var currentRotation = Quaternion.Euler(0, currentRotationAngle, 0);
-
-        // Set the position of the camera on the x-z plane to the position of the user:
-        transform.position = user.position + user.forward * distance;
-
-        // Set the height of the camera
-        transform.position = new Vector3(transform.position.x, currentHeight, transform.position.z);
-
-        // Always look at the target's head
-        if (target != null)
-        {
-            transform.LookAt(target.position + user.up * 5.0f);
-        }
-        else
-        {
-            // If there is no target yet, look at a bit forward of the camera/user position.
-            transform.LookAt(user.position + user.forward * distance * 2 + user.up * 5.0f);
-        }
+        transform.position = user.position + user.up * height + user.forward * distance;
+        transform.rotation = user.rotation;
     }
 }

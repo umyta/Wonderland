@@ -77,8 +77,11 @@ public class ClickDetector : MonoBehaviour
                 CheckMenuClick(hitGameObj);
 
                 // Reset the stored mouse interaction for drag.
-                startHeight = 0.0f;
-                endHeight = 0.0f;
+                if (startHeight > 0.0001f || endHeight > 0.0001f)
+                {
+                    startHeight = 0.0f;
+                    endHeight = 0.0f;   
+                }
             }
         }
 
@@ -86,7 +89,7 @@ public class ClickDetector : MonoBehaviour
         {
             Debug.Log("Button down");
             // When long press, we only want to hit players.
-            RayCastReturnValue mousePointedAt = HelperLibrary.RaycastObject(Input.mousePosition);
+            RayCastReturnValue mousePointedAt = HelperLibrary.RaycastObject(Input.mousePosition, playerMask);
             GameObject hitGameObj = mousePointedAt.hitObject;
             if (hitGameObj != null && hitGameObj != this.gameObject)
             {
