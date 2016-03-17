@@ -5,7 +5,8 @@ using System.Collections;
 public enum PlayerState
 {
     Idle,
-    Walking}
+    Walking,
+    UI}
 
 ;
 

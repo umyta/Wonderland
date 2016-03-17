@@ -6,16 +6,9 @@ using MoveServerNS;
 [RequireComponent(typeof(Rigidbody))]
 public class Level01WinController : MonoBehaviour, MotionController
 {
-    // Stores animation states for serialization.
-    public enum PlayerState
-    {
-        Idle,
-        Walking,
-        UI}
-
-    ;
     //Windows Server
-    public WinMoveServer moveServer;
+    private WinMoveServer moveServer;
+
     [Range(1, 6)]
     public int controller;
     //public GameObject controlBall;
@@ -48,11 +41,21 @@ public class Level01WinController : MonoBehaviour, MotionController
         anim = GetComponent<Animator>();
         playerRigidbody = GetComponent<Rigidbody>();
         setUIInitial = false;
+        moveServer = GameObject.FindObjectOfType<WinMoveServer>();
+        if (moveServer != null)
+        {
+            Debug.Log("Move server is setup for player " + PhotonNetwork.player.ID);
+        }
     }
 
     // Update is called once per frame
     public void FixedUpdate()
     {
+        if (moveServer == null)
+        {
+            Debug.LogWarning("Please set up move server first");
+            return;
+        }
         WinMoveController move = moveServer.getController(controller - 1);
 
         if (move != null && isControllable)
@@ -201,5 +204,10 @@ public class Level01WinController : MonoBehaviour, MotionController
             anim.SetBool("IsWalking", false);
         }
 
+    }
+
+    public void SetMoveServer(WinMoveServer server)
+    {
+        moveServer = server;
     }
 }

@@ -91,7 +91,6 @@ public class NetworkManager : Photon.PunBehaviour
         MouseKeyboardCharacterControl mkController = player.GetComponent<MouseKeyboardCharacterControl>();
         Level01WinController psmoveController = player.GetComponent<Level01WinController>();
         Debug.Log("Setup windMove server for player " + player.GetPhotonView().ownerId);
-        psmoveController.moveServer = winMoveServer;
 
         switch (HelperLibrary.GetOS())
         {
