@@ -11,6 +11,7 @@ public class Level01WinController : MonoBehaviour, MotionController
 {
     public Transform playerCameraTransform;
     public Transform moveCursor;
+    public Vector3 moveCursorInitPos;
 
     // Player Camera
     private Camera playerCamera;
@@ -33,6 +34,11 @@ public class Level01WinController : MonoBehaviour, MotionController
 
     //Tools
     Dictionary<int, GameObject> toolMap;
+    int playerMask;
+    int toolMask;
+    int menuUIMask;
+    int combinedMask;
+    int playerID = GameLogic.InvalidPlayerId;
 
     //Player Movement
     public float speed = 6f;
@@ -58,11 +64,14 @@ public class Level01WinController : MonoBehaviour, MotionController
         menuUIScript = GetComponent<MenuUI>();
         playerCamera = GetComponent<Camera>();
         toolMap = HelperLibrary.GetAllToolsInScene();
+        moveCursorInitPos = moveCursor.transform.localPosition;
     }
 
     // Update is called once per frame
     public void FixedUpdate()
     {
+        ErrorCheck();
+
         if (moveServer == null || toolMap == null)
         {
             Debug.LogWarning("Please set up move server or toolMap first");
@@ -95,9 +104,9 @@ public class Level01WinController : MonoBehaviour, MotionController
 
                 /* Update move cursor */
 
-                delta += moveCursor.transform.forward * delta.z;
-                delta += moveCursor.transform.up * delta.y;
-                delta += moveCursor.transform.right * delta.x;
+                delta += transform.forward * delta.z;
+                delta += transform.up * delta.y;
+                delta += transform.right * delta.x;
                 delta.z = -delta.z;
 
                 moveCursor.position += delta * SCALE;
@@ -105,6 +114,14 @@ public class Level01WinController : MonoBehaviour, MotionController
 
             RayCastReturnValue mousePointedAt = HelperLibrary.WorldToScreenRaycast(moveCursor.position, playerCamera, 1000);
             GameObject hitObject = mousePointedAt.hitObject;
+
+            /* Trigger functions */
+            if (move.triggerValue > 0)
+            {
+
+                moveCursor.localPosition = moveCursorInitPos;
+                moveCursor.transform.forward = playerCamera.transform.forward;
+            }
 
             /* Hover */
             CheckHoverOverMenuItems();
@@ -145,6 +162,30 @@ public class Level01WinController : MonoBehaviour, MotionController
         }
     }
 
+    private void ErrorCheck()
+    {
+        // Make sure the toolMap is set.
+        if (toolMap == null)
+        {
+            Debug.Log("toolMap is missing.");
+
+            return;
+        }
+
+        // Make sure that player ID is valid.
+        if (playerID == GameLogic.InvalidPlayerId)
+        {
+            // Try to setup the player ID.
+            playerID = PhotonNetwork.player.ID;
+        }
+
+        if (playerID == GameLogic.InvalidPlayerId)
+        {
+            // If the setup fails, the playerID may still be invalid.
+            return;
+        }
+    }
+
     private void CheckMenuSelected(GameObject menuItem)
     {
         if (menuItem.CompareTag("UI"))
@@ -164,73 +205,77 @@ public class Level01WinController : MonoBehaviour, MotionController
 
     /********************Tools***********************************/
 
-    private void CheckToolClick(GameObject mousePointedAt)
+    private void CheckToolClick(GameObject hitGameObj)
     {
         // Check if this user is eligible to use this tool
-        if (mousePointedAt.CompareTag("ResizeTool")
+        if (hitGameObj.CompareTag("ResizeTool")
             && GameLogic.playerWhoIsUsingResizeTool == GameLogic.InvalidPlayerId)
         {
             // This player uses this tool.
-            ToolInterface tool = mousePointedAt.transform.GetComponent<ToolInterface>();
+            ToolInterface tool = hitGameObj.transform.GetComponent<ToolInterface>();
             // Game logic stores unique ids for the player and the tool.
-            GameLogic.TagResizePlayer(PhotonNetwork.player.ID, mousePointedAt.GetInstanceID());
+            GameLogic.TagResizePlayer(playerID, hitGameObj.GetInstanceID());
             tool.Use(transform);
         }
-        else if (mousePointedAt.CompareTag("SpringTool")
+        else if (hitGameObj.CompareTag("SpringTool")
                  && GameLogic.playerWhoIsUsingSpringTool == GameLogic.InvalidPlayerId)
         {
-            GameLogic.TagSpringPlayer(PhotonNetwork.player.ID, mousePointedAt.GetInstanceID());
+            GameLogic.TagSpringPlayer(playerID, hitGameObj.GetInstanceID());
             // This player uses this tool.
-            ToolInterface tool = mousePointedAt.transform.GetComponent<ToolInterface>();
+            ToolInterface tool = hitGameObj.transform.GetComponent<ToolInterface>();
             tool.Use(transform);
         }
-        else if (mousePointedAt.CompareTag("MagnetTool")
+        else if (hitGameObj.CompareTag("MagnetTool")
                  && GameLogic.playerWhoIsUsingMagnetTool == GameLogic.InvalidPlayerId)
         {
-            GameLogic.TagMagnetPlayer(PhotonNetwork.player.ID, mousePointedAt.GetInstanceID());
+            GameLogic.TagMagnetPlayer(playerID, hitGameObj.GetInstanceID());
             // This player uses this tool.
-            ToolInterface tool = mousePointedAt.transform.GetComponent<ToolInterface>();
+            ToolInterface tool = hitGameObj.transform.GetComponent<ToolInterface>();
             tool.Use(transform);
         }
     }
 
-    private void CheckPlayerClick(GameObject mousePointedAt)
+    private void CheckPlayerClick(GameObject hitGameObj)
     {
-        if (mousePointedAt.CompareTag("Player"))
+        if (hitGameObj.CompareTag("Player"))
         {
             // if this player is not "controlling the resizing tool", 
             // the player can't tag anyone, so don't do anything on collision
-            Debug.Log(PhotonNetwork.player.ID + " is resizing.");
-            if (PhotonNetwork.player.ID == GameLogic.playerWhoIsUsingResizeTool
+            Debug.Log(PhotonNetwork.player.ID + " is being resized.");
+            if (playerID == GameLogic.playerWhoIsUsingResizeTool
                 && toolMap.ContainsKey(GameLogic.resizeTool))
             {
-                // Get the root photon view of the player.
-                PhotonView rootView =
-                    mousePointedAt.transform.root.GetComponent<PhotonView>();
-                // Set the resizing target.
-                GameLogic.TagResizeTarget(rootView.owner.ID);
-                ToolInterface tool = toolMap[GameLogic.resizeTool].GetComponent<ResizeTool>();
-                tool.SetTarget(mousePointedAt.transform);
-
+                SetResizeTarget(hitGameObj);
                 //                Debug.Log("Set resize target to " + rootView.owner.ID);
             }
-            else if (PhotonNetwork.player.ID == GameLogic.playerWhoIsUsingSpringTool)
+            else if (playerID == GameLogic.playerWhoIsUsingSpringTool)
             {
                 // Get the root photon view of the player.
                 PhotonView rootView =
-                    mousePointedAt.transform.root.GetComponent<PhotonView>();
+                    hitGameObj.transform.root.GetComponent<PhotonView>();
                 // Set the resizing target.
                 GameLogic.TagSpringTarget(rootView.owner.ID);
             }
-            else if (PhotonNetwork.player.ID == GameLogic.playerWhoIsUsingMagnetTool)
+            else if (playerID == GameLogic.playerWhoIsUsingMagnetTool)
             {
                 // Get the root photon view of the player.
                 PhotonView rootView =
-                    mousePointedAt.transform.root.GetComponent<PhotonView>();
+                    hitGameObj.transform.root.GetComponent<PhotonView>();
                 // Set the resizing target.
                 GameLogic.TagMagnetTarget(rootView.owner.ID);
             }
         }
+    }
+
+    private void SetResizeTarget(GameObject hitGameObj)
+    {
+        // Get the root photon view of the player.
+        PhotonView rootView =
+            hitGameObj.transform.root.GetComponent<PhotonView>();
+        // Set the resizing target.
+        GameLogic.TagResizeTarget(rootView.owner.ID);
+        ToolInterface tool = toolMap[GameLogic.resizeTool].GetComponent<ResizeTool>();
+        tool.SetTarget(hitGameObj.transform);
     }
 
     private void CheckToolPerform()

@@ -6,7 +6,8 @@ public enum PlayerState
 {
     Idle,
     Walking,
-    UI}
+    UI,
+    TOOL}
 
 ;
 
