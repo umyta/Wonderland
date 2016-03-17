@@ -58,7 +58,7 @@ public class ClickDetector : MonoBehaviour
         // for move, and arrow to turn, and look up or down.
         if (isControllable && Input.GetMouseButtonUp(0))
         {
-            Debug.Log("Button up");
+//            Debug.Log("Button up");
             RayCastReturnValue mousePointedAt = HelperLibrary.RaycastObject(Input.mousePosition, combinedMask);
             GameObject hitGameObj = mousePointedAt.hitObject;
             if (hitGameObj != null && hitGameObj != this.gameObject)
@@ -75,7 +75,7 @@ public class ClickDetector : MonoBehaviour
 
         if (isControllable && Input.GetMouseButton(0))
         {
-            Debug.Log("Button down");
+//            Debug.Log("Button down");
             // When long press, we only want to hit players.
             RayCastReturnValue mousePointedAt = HelperLibrary.RaycastObject(Input.mousePosition, playerMask);
             GameObject hitGameObj = mousePointedAt.hitObject;

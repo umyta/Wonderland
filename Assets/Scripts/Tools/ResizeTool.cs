@@ -20,7 +20,7 @@ public class ResizeTool : MonoBehaviour, ToolInterface
     private Vector3 originalPose;
     // Use this for initialization
     private static PhotonView ScenePhotonView;
-
+    private Rigidbody rb;
     // A percentage of the original size.
     private Rect SMALL_SUB_WINDOW_SIZE = new Rect(-0.75f, 0.75f, 1.0f, 1.0f);
     private Rect FULL_SCREEN_WINDOW_SIZE = new Rect(0.0f, 0.0f, 1.0f, 1.0f);
@@ -31,6 +31,7 @@ public class ResizeTool : MonoBehaviour, ToolInterface
 
     void Start()
     {
+        rb = GetComponent<Rigidbody>();
         cameraToolTransform.gameObject.SetActive(false);
         standbyCamera = GameObject.Find("StandbyCamera").GetComponent<Camera>();
         cameraTool = cameraToolTransform.GetComponent<Camera>();
@@ -73,7 +74,7 @@ public class ResizeTool : MonoBehaviour, ToolInterface
         SwitchViewPortToMainCamera();
         PutCameraDown();
         // Turn off collider to allow user to hold the camera.
-        SetAllColliders(true);
+        DisablePhysics(true);
         status.userTransform = null;
         targetOriginalSize = 0.0f;
     }
@@ -146,7 +147,7 @@ public class ResizeTool : MonoBehaviour, ToolInterface
         cameraTool.depth = 0;
         // Disable all colliders to avoid conflicts with the player.
         // TODO(sainan): we can also use layers to achieve this if we have time.
-        SetAllColliders(false);
+        DisablePhysics(false);
 
         // Disable the main camera to allow the new main camera to take effect.
         standbyCamera.gameObject.SetActive(false);
@@ -179,11 +180,17 @@ public class ResizeTool : MonoBehaviour, ToolInterface
     }
 
     // Enable or disable colliders of this object.
-    private void SetAllColliders(bool enable)
+    private void DisablePhysics(bool enable)
     {
         foreach (Collider collider in colliders)
         {
             collider.enabled = enable;
+        }
+
+        if (rb != null)
+        {
+            // if colliders are enabled, rb should not be ignoring the gravity and collisions.
+            rb.isKinematic = !enable;
         }
     }
 
