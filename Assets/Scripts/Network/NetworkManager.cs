@@ -10,7 +10,8 @@ public class NetworkManager : Photon.PunBehaviour
     private const int GROUP = 0;
     public string playerPrefabName = "NetworkPlayer";
     public string roomName = "Test";
-    public Transform spawnPopint;
+    public Transform[] spawnPopints;
+    public bool[] spawnRegister = { false, false };
     private WinMoveServer winMoveServer;
     // Disable standby camera if it's not yet done.
     private GameObject standbyObj;
@@ -60,11 +61,29 @@ public class NetworkManager : Photon.PunBehaviour
 
     public override void OnJoinedRoom()
     {
+        int freeSpawnID = GameLogic.InvalidPlayerId;
+        if (!spawnRegister[0])
+        {
+            freeSpawnID = 0;
+            spawnRegister[0] = true;
+            
+        }
+        else if (!spawnRegister[1])
+        {
+            freeSpawnID = 1;
+            spawnRegister[1] = true;
+        }
+        else
+        {
+            // TODO(sainan): reuse 0 for now.
+            freeSpawnID = 0;
+        }
+
         // Instantiate everything that every user should see here.
         GameObject player = PhotonNetwork.Instantiate(
                                 playerPrefabName,
-                                spawnPopint.position,
-                                spawnPopint.rotation, 
+                                spawnPopints[freeSpawnID].position,
+                                spawnPopints[freeSpawnID].rotation, 
                                 GROUP);
         
 

@@ -77,7 +77,7 @@ public class ClickDetector : MonoBehaviour
                 CheckMenuClick(hitGameObj);
 
                 // Reset the stored mouse interaction for drag.
-                if (startHeight > 0.0001f || endHeight > 0.0001f)
+                if (startHeight != 0.0f || endHeight != 0.0f)
                 {
                     startHeight = 0.0f;
                     endHeight = 0.0f;   
