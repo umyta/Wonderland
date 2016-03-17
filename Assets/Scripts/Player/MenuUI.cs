@@ -27,6 +27,15 @@ public class MenuUI : MonoBehaviour
         }
         playerMenu = playerMenuTransform.GetComponent<PlayerMenu>();
     }
+
+    public void clearSelection() {
+        GameObject[] menuItems = GameObject.FindGameObjectsWithTag("UI");
+        foreach (GameObject menuItem in menuItems)
+        {
+            MeshRenderer mesh = menuItem.transform.GetComponentInChildren<MeshRenderer>();
+            mesh.material.color = Color.white;
+        }
+    }
 	
     // Open arm menu.
     public void ToggleMenu()
