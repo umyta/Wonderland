@@ -196,7 +196,6 @@ public class ResizeTool : MonoBehaviour, ToolInterface
             rb.isKinematic = !enable;
         }
     }
-
     // Update to follow the player
     void LateUpdate()
     {
