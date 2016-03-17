@@ -12,6 +12,7 @@ public class ResizeTool : MonoBehaviour, ToolInterface
     private Transform user;
     private Transform target;
     private Collider[] colliders;
+
     // The distance in the x-z plane to the target
     public float distance = 5.0f;
     // the height we want the camera to be above the target
@@ -24,6 +25,11 @@ public class ResizeTool : MonoBehaviour, ToolInterface
     // Use this for initialization
     private static PhotonView ScenePhotonView;
 
+    private Vector3 playerOriginalScale = new Vector3(10.0f, 10.0f, 10.0f);
+    private Vector3 maxScale = new Vector3(10.0f, 10.0f, 10.0f);
+    private Vector3 minScale = new Vector3(10.0f, 10.0f, 10.0f);
+    private float scalingFactor = 0.0f;
+
     void Start()
     {
         cameraToolTransform.gameObject.SetActive(false);
@@ -32,8 +38,6 @@ public class ResizeTool : MonoBehaviour, ToolInterface
         colliders = transform.GetComponents<Collider>();
         originalPose = transform.position;
     }
-
-
 
     // Detects if a tool is found by a user.
     void OnTriggerEnter(Collider other)
@@ -78,7 +82,20 @@ public class ResizeTool : MonoBehaviour, ToolInterface
 
     public void Perform(float scale)
     {
-        ResizeTarget(scale);
+        playerOriginalScale = target.localScale;
+        maxScale = playerOriginalScale;
+        if (scale > minScale.x && scale < maxScale.x)
+        {
+            scalingFactor = scale;
+            ResizeTarget(scale); 
+        }
+    }
+
+    public ToolStatus GetStatus()
+    {
+        ToolStatus status = new ToolStatus();
+        status.factor = scalingFactor;
+        return status;
     }
 
     private void ResizeTarget(float scale)
@@ -89,6 +106,7 @@ public class ResizeTool : MonoBehaviour, ToolInterface
             return;
         }
         Debug.Log("ResizeTarget: " + target.name);
+
         target.GetComponent<PhotonView>().RPC("Resize", PhotonTargets.All, scale);       
     }
 

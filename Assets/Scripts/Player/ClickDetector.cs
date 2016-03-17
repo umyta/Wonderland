@@ -10,33 +10,22 @@ public class ClickDetector : MonoBehaviour
 {
     MenuUI menu;
     public bool isControllable = false;
-    Dictionary<int, GameObject> toolMap = new Dictionary<int, GameObject>();
+    Dictionary<int, GameObject> toolMap;
 
     void Awake()
     {
         menu = GetComponent<MenuUI>();
-        // TODO(sainan): consider tag all tools as Tool instead of individual tags.
-        // Considering that we may need to check type of classes to differentiate game logic
-        // in clickDetector.
-        GameObject[] tools = GameObject.FindGameObjectsWithTag("ResizeTool");
-        foreach (GameObject obj in tools)
-        {
-            toolMap[obj.GetInstanceID()] = obj;
-        }
-        tools = GameObject.FindGameObjectsWithTag("SpringTool");
-        foreach (GameObject obj in tools)
-        {
-            toolMap[obj.GetInstanceID()] = obj;
-        }
-        tools = GameObject.FindGameObjectsWithTag("MagnetTool");
-        foreach (GameObject obj in tools)
-        {
-            toolMap[obj.GetInstanceID()] = obj;
-        }
+        toolMap = HelperLibrary.GetAllToolsInScene();
     }
 
     void Update()
     {
+        if (toolMap == null)
+        {
+            Debug.Log("toolMap is missing.");
+
+            return;
+        }
         // If left button of the mouse is held down,
         // and if the ray of the mouse touches another player,
         // start controlling the size of the other player
@@ -105,7 +94,7 @@ public class ClickDetector : MonoBehaviour
         {
             // if this player is not "controlling the resizing tool", 
             // the player can't tag anyone, so don't do anything on collision
-            Debug.Log(PhotonNetwork.player.ID + " is resizing.");
+            Debug.Log(PhotonNetwork.player.ID + " is being resized.");
             if (PhotonNetwork.player.ID == GameLogic.playerWhoIsUsingResizeTool
                 && toolMap.ContainsKey(GameLogic.resizeTool))
             {

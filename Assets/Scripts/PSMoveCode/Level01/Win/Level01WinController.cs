@@ -42,10 +42,6 @@ public class Level01WinController : MonoBehaviour, MotionController
         playerRigidbody = GetComponent<Rigidbody>();
         setUIInitial = false;
         moveServer = GameObject.FindObjectOfType<WinMoveServer>();
-        if (moveServer != null)
-        {
-            Debug.Log("Move server is setup for player " + PhotonNetwork.player.ID);
-        }
     }
 
     // Update is called once per frame
