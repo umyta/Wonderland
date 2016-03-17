@@ -39,9 +39,11 @@ public class GameLogicDisplay : MonoBehaviour
                 Debug.LogWarning("player " + myPlayerID + " is using resizing, but toolMap does not contain " + GameLogic.resizeTool);
                 return;
             }
+
+            ResizeTool tool = toolMap[GameLogic.resizeTool].GetComponent<ResizeTool>();
             gameStatus.text = 
-                    "Player is Scaling " + GameLogic.playerWhoIsBeingResized
-            + " to: " + toolMap[GameLogic.resizeTool].GetComponent<ResizeTool>().GetStatus().factor + "\n";
+                "Player is Scaling " + GameLogic.playerWhoIsBeingResized +
+            " by " + tool.GetStatus().factor + "%\n";
         }
         else if (myPlayerID == GameLogic.playerWhoIsUsingSpringTool)
         {

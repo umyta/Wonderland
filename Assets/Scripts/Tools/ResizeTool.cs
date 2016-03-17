@@ -8,7 +8,8 @@ public class ResizeTool : MonoBehaviour, ToolInterface
 {
     // The user is the one that controls the camera
     public Transform cameraToolTransform;
-
+    public Transform maxResizeTransform;
+    public Transform minResizeTransform;
     private Camera standbyCamera;
     private Camera cameraTool;
     private FollowPlayer toolFollow;
@@ -21,12 +22,14 @@ public class ResizeTool : MonoBehaviour, ToolInterface
     // Use this for initialization
     private static PhotonView ScenePhotonView;
 
-    private Vector3 playerOriginalScale = new Vector3(10.0f, 10.0f, 10.0f);
-    private Vector3 maxScale = new Vector3(10.0f, 10.0f, 10.0f);
-    private Vector3 minScale = new Vector3(10.0f, 10.0f, 10.0f);
+    // A percentage of the original size.
     private float scalingFactor = 0.0f;
     private Rect SMALL_SUB_WINDOW_SIZE = new Rect(-0.75f, 0.75f, 1.0f, 1.0f);
     private Rect FULL_SCREEN_WINDOW_SIZE = new Rect(0.0f, 0.0f, 1.0f, 1.0f);
+    private float maxSize = 0.0f;
+    private float minSize = 0.0f;
+    // Updated whenever a target is set.
+    private float targetOriginalSize = 0.0f;
 
     void Start()
     {
@@ -36,6 +39,9 @@ public class ResizeTool : MonoBehaviour, ToolInterface
         colliders = transform.GetComponents<Collider>();
         originalPose = transform.position;
         toolFollow = transform.GetComponent<FollowPlayer>();
+        maxSize = maxResizeTransform.GetComponent<BoxCollider>().size.x;
+        minSize = minResizeTransform.GetComponent<BoxCollider>().size.x;
+        Debug.Log("Min size " + minSize + " Max size " + maxSize);
     }
 
     // Detects if a tool is found by a user.
@@ -71,12 +77,15 @@ public class ResizeTool : MonoBehaviour, ToolInterface
         // Turn off collider to allow user to hold the camera.
         SetAllColliders(true);
         user = null;
+        targetOriginalSize = 0.0f;
     }
 
     // Set the target of the resize tool
     public void SetTarget(Transform target)
     {
         this.target = target;
+        targetOriginalSize = target.GetComponent<BoxCollider>().size.x;
+        Debug.Log("Target size: " + targetOriginalSize);
     }
 
     public void TryPerform(float scale)
@@ -85,33 +94,38 @@ public class ResizeTool : MonoBehaviour, ToolInterface
         {
             Debug.Log("Can't perform resizing, please click on the target first");
         }
-        playerOriginalScale = target.localScale;
-        maxScale = playerOriginalScale;
-        if (scale > minScale.x && scale < maxScale.x)
-        {
-            scalingFactor = scale;
-            ResizeTarget(scale); 
-        }
+        ResizeTarget(scale); 
     }
 
     public ToolStatus GetStatus()
     {
-        status.factor = scalingFactor;
+        status.factor = (scalingFactor * targetOriginalSize / targetOriginalSize) * 100;
         return status;
+    }
+
+    // Expect scale to be a number between 0 to 1.
+    private void AdjustedScaleFactor(float scale)
+    {
+        float minScaleFactor = minSize / targetOriginalSize;
+        float maxScaleFactor = maxSize / targetOriginalSize;
+        Debug.Log("min scaling factor is " + minScaleFactor);
+        Debug.Log("max scaling factor is " + maxScaleFactor);
+        Debug.Log("scale is " + scale);
+        scalingFactor = minScaleFactor + scale * (maxScaleFactor - minScaleFactor);
     }
 
     private void ResizeTarget(float scale)
     {
         if (target == null)
         {
-            Debug.Log("Please select resize target first by clicking on the target!");
+            Debug.LogWarning("Please select resize target first by clicking on the target!");
             return;
         }
-        Debug.Log("ResizeTarget: " + target.name);
-
-        target.GetComponent<PhotonView>().RPC("Resize", PhotonTargets.All, scale);       
+        AdjustedScaleFactor(scale); // Set scaling factor.
+        Debug.Log("Trying to resizing " + targetOriginalSize + " to " + scalingFactor * targetOriginalSize);
+        target.GetComponent<PhotonView>().RPC("Resize", PhotonTargets.All, scalingFactor);       
     }
-
+     
     // Enable first person view, and make this tool start following the player.
     private void SwitchViewPortToResizeCamera()
     {
