@@ -7,6 +7,8 @@ using System.Collections.Generic;
 public class HelperLibrary
 {
     public static float cameraRayLength = 100f;
+    private static Dictionary<int, GameObject> toolMap;
+
     // Raycast helper function returns an object.
     public static RayCastReturnValue RaycastObject(Vector2 screenPos, int layermask = Physics.DefaultRaycastLayers)
     {
@@ -31,12 +33,13 @@ public class HelperLibrary
     public static RayCastReturnValue WorldToScreenRaycast(Vector3 pos, Camera cam, int camRayLength, int layermask = Physics.DefaultRaycastLayers)
     {
         Vector3 cursorScreenPt = cam.WorldToScreenPoint(pos);
-        Vector2 cursorPt2D = new Vector2(cursorScreenPt.x ,cursorScreenPt.y);
+        Vector2 cursorPt2D = new Vector2(cursorScreenPt.x, cursorScreenPt.y);
         Ray ray = cam.ScreenPointToRay(cursorPt2D);
         Debug.DrawRay(ray.origin, ray.direction.normalized * cameraRayLength, Color.green, Time.deltaTime, true);
         RaycastHit hit;
         RayCastReturnValue raycastRetVal = new RayCastReturnValue();
-        if (Physics.Raycast(ray, out hit, camRayLength, layermask)) {
+        if (Physics.Raycast(ray, out hit, camRayLength, layermask))
+        {
             raycastRetVal.hitObject = hit.collider.gameObject;
             raycastRetVal.hitPoint = hit.point;
             return raycastRetVal;
@@ -83,21 +86,24 @@ public class HelperLibrary
     {   // TODO(sainan): consider tag all tools as Tool instead of individual tags.
         // Considering that we may need to check type of classes to differentiate game logic
         // in clickDetector.
-        Dictionary<int, GameObject> toolMap = new Dictionary<int, GameObject>();
-        GameObject[] tools = GameObject.FindGameObjectsWithTag("ResizeTool");
-        foreach (GameObject obj in tools)
+        if (toolMap == null)
         {
-            toolMap[obj.GetInstanceID()] = obj;
-        }
-        tools = GameObject.FindGameObjectsWithTag("SpringTool");
-        foreach (GameObject obj in tools)
-        {
-            toolMap[obj.GetInstanceID()] = obj;
-        }
-        tools = GameObject.FindGameObjectsWithTag("MagnetTool");
-        foreach (GameObject obj in tools)
-        {
-            toolMap[obj.GetInstanceID()] = obj;
+            toolMap = new Dictionary<int, GameObject>();
+            GameObject[] tools = GameObject.FindGameObjectsWithTag("ResizeTool");
+            foreach (GameObject obj in tools)
+            {
+                toolMap[obj.GetInstanceID()] = obj;
+            }
+            tools = GameObject.FindGameObjectsWithTag("SpringTool");
+            foreach (GameObject obj in tools)
+            {
+                toolMap[obj.GetInstanceID()] = obj;
+            }
+            tools = GameObject.FindGameObjectsWithTag("MagnetTool");
+            foreach (GameObject obj in tools)
+            {
+                toolMap[obj.GetInstanceID()] = obj;
+            }
         }
         return toolMap;
     }
