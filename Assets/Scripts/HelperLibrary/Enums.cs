@@ -8,8 +8,14 @@ public enum PlayerState
     Walking,
     UI,
     Tool}
-
 ;
+
+public enum ClueState
+{
+    None = 0,
+    Clue1 = 1,
+    Clue2 = 2
+};
 
 public enum OperatingSystemForController
 {
