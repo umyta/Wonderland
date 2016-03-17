@@ -12,4 +12,5 @@ public struct ToolStatus
     public float factor;
     public Transform userTransform;
     public Transform targetTransform;
+    public bool flag;
 }
