@@ -15,6 +15,7 @@ public class MenuUI : MonoBehaviour
     private const string TOOL = "Tool";
     private const string KEY = "Key";
     private PlayerMenu playerMenu;
+    private ClueStates clueStatesScript;
     // Use this for initialization
     void Awake()
     {
@@ -26,6 +27,7 @@ public class MenuUI : MonoBehaviour
             mesh.material.color = Color.white;
         }
         playerMenu = playerMenuTransform.GetComponent<PlayerMenu>();
+        clueStatesScript = GetComponent<ClueStates>();
     }
 
     public void clearSelection() {
@@ -35,6 +37,11 @@ public class MenuUI : MonoBehaviour
             MeshRenderer mesh = menuItem.transform.GetComponentInChildren<MeshRenderer>();
             mesh.material.color = Color.white;
         }
+    }
+
+    public void displayClue(ClueState clueState)
+    {
+        playerMenu.displayClue(clueState);
     }
 	
     // Open arm menu.
@@ -74,6 +81,7 @@ public class MenuUI : MonoBehaviour
                 ExitGame();
                 break;
             case CLUE:
+                displayClue(clueStatesScript.GetClueState());
                 Debug.Log("TODO(sylvia): STAR needs to be implemented!");
                 break;
             case TOOL:

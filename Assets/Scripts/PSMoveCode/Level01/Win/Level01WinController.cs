@@ -44,6 +44,7 @@ public class Level01WinController : MonoBehaviour, MotionController
 
     //Clues
     ClueState clueState = ClueState.None;
+    ClueStates clueStateScript;
 
     //Player Movement
     public float speed = 6f;
@@ -68,6 +69,7 @@ public class Level01WinController : MonoBehaviour, MotionController
 
         menuUIScript = GetComponent<MenuUI>();
         playerCamera = GetComponent<Camera>();
+        clueStateScript = GetComponent<ClueStates>();
         toolMap = HelperLibrary.GetAllToolsInScene();
         moveCursorInitPos = moveCursor.transform.localPosition;
     }
@@ -240,7 +242,10 @@ public class Level01WinController : MonoBehaviour, MotionController
             tool.Use(transform);
             toolState = PlayerState.Tool;
             if (ClueState.Clue1 > clueState)
+            {
                 clueState = ClueState.Clue1;
+                clueStateScript.SetClueState(clueState);
+            }
         }
         else if (hitGameObj.CompareTag("SpringTool")
                  && GameLogic.playerWhoIsUsingSpringTool == GameLogic.InvalidPlayerId)
