@@ -82,7 +82,6 @@ public class MenuUI : MonoBehaviour
                 break;
             case CLUE:
                 displayClue(clueStatesScript.GetClueState());
-                Debug.Log("TODO(sylvia): STAR needs to be implemented!");
                 break;
             case TOOL:
                 Debug.Log("Tool item is selected, not sure if we need this.");
