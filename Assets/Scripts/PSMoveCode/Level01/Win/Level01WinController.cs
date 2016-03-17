@@ -42,6 +42,9 @@ public class Level01WinController : MonoBehaviour, MotionController
     int playerID = GameLogic.InvalidPlayerId;
     float initialY;
 
+    //Clues
+    ClueState clueState = ClueState.None;
+
     //Player Movement
     public float speed = 6f;
     Animator anim;
@@ -130,7 +133,7 @@ public class Level01WinController : MonoBehaviour, MotionController
             }
 
             /* Exit menu */
-            if (HelperLibrary.isTopRight(moveCursor.position, playerCamera))
+            if (HelperLibrary.isTopRight(moveCursor.position, playerCamera) && move.btnOnRelease(MoveButton.BTN_MOVE))
             {
                 CheckMenuActive(move);
                 return;
@@ -236,6 +239,8 @@ public class Level01WinController : MonoBehaviour, MotionController
             GameLogic.TagResizePlayer(playerID, hitGameObj.GetInstanceID());
             tool.Use(transform);
             toolState = PlayerState.Tool;
+            if (ClueState.Clue1 > clueState)
+                clueState = ClueState.Clue1;
         }
         else if (hitGameObj.CompareTag("SpringTool")
                  && GameLogic.playerWhoIsUsingSpringTool == GameLogic.InvalidPlayerId)
