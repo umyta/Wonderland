@@ -133,6 +133,7 @@ public class Level01WinController : MonoBehaviour, MotionController
 
             if (mousePointedAt != null && move.btnOnRelease(MoveButton.BTN_MOVE))
             {
+                Debug.Log("Raycast hit " + mousePointedAt.name);
                 CheckMenuSelected(mousePointedAt);
                 CheckToolClick(mousePointedAt);
             }
