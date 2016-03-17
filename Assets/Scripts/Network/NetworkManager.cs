@@ -76,9 +76,12 @@ public class NetworkManager : Photon.PunBehaviour
         ClickDetector cDetector = player.GetComponent<ClickDetector>();
         KeyDetector kDetector = player.GetComponent<KeyDetector>();
         MouseOverDetector moDetector = player.GetComponent<MouseOverDetector>();
+        PlayerStatusDisplay statusDisplay = player.GetComponent<PlayerStatusDisplay>();
+
         cDetector.isControllable = true;
         kDetector.isControllable = true;
         moDetector.isControllable = true;
+        statusDisplay.isControllable = true;
         // Enable player camera.
         foreach (Transform child in player.transform)
         {
@@ -90,7 +93,6 @@ public class NetworkManager : Photon.PunBehaviour
         // Detects the system and decide on what controller to enable.
         MouseKeyboardCharacterControl mkController = player.GetComponent<MouseKeyboardCharacterControl>();
         Level01WinController psmoveController = player.GetComponent<Level01WinController>();
-        Debug.Log("Setup windMove server for player " + player.GetPhotonView().ownerId);
 
         switch (HelperLibrary.GetOS())
         {

@@ -15,11 +15,14 @@ public class MagnetTool : MonoBehaviour, ToolInterface
 
     public void SetTarget(Transform target)
     {
-        
     }
 
     public void Perform(float force)
     {
-        
+    }
+
+    public ToolStatus GetStatus()
+    {
+        return new ToolStatus();
     }
 }

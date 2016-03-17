@@ -2,6 +2,8 @@
 using System.Collections;
 using MoveServerNS;
 
+using System.Collections.Generic;
+
 public class HelperLibrary
 {
     public static float cameraRayLength = 100f;
@@ -72,5 +74,28 @@ public class HelperLibrary
         }
 
         return OperatingSystemForController.UnknownSystem;
+    }
+
+    public static Dictionary<int, GameObject> GetAllToolsInScene()
+    {   // TODO(sainan): consider tag all tools as Tool instead of individual tags.
+        // Considering that we may need to check type of classes to differentiate game logic
+        // in clickDetector.
+        Dictionary<int, GameObject> toolMap = new Dictionary<int, GameObject>();
+        GameObject[] tools = GameObject.FindGameObjectsWithTag("ResizeTool");
+        foreach (GameObject obj in tools)
+        {
+            toolMap[obj.GetInstanceID()] = obj;
+        }
+        tools = GameObject.FindGameObjectsWithTag("SpringTool");
+        foreach (GameObject obj in tools)
+        {
+            toolMap[obj.GetInstanceID()] = obj;
+        }
+        tools = GameObject.FindGameObjectsWithTag("MagnetTool");
+        foreach (GameObject obj in tools)
+        {
+            toolMap[obj.GetInstanceID()] = obj;
+        }
+        return toolMap;
     }
 }

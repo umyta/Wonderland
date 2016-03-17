@@ -1,14 +1,22 @@
 ﻿using UnityEngine;
 using System.Collections;
-using System.Collections.Generic;  //Dictionary
+using System.Collections.Generic;
 
-using MoveServerNS;                //Sony move server
+//Dictionary
+
+using MoveServerNS;
+
+//Sony move server
 [RequireComponent(typeof(MenuUI))]
 [RequireComponent(typeof(Animator))]
 [RequireComponent(typeof(Rigidbody))]
 public class Level01WinController : MonoBehaviour, MotionController
 {
-    public Camera camera;
+    public Transform playerCameraTransform;
+    public Transform moveCursor;
+
+    // Player Camera
+    private Camera playerCamera;
     //Windows Server
     private WinMoveServer moveServer;
 
@@ -21,7 +29,6 @@ public class Level01WinController : MonoBehaviour, MotionController
     //UI
     private Vector3 actualControllerPrevPos;
     private Vector3 delta;
-    private Transform moveCursor;
     MenuUI menuUIScript;
     private bool UIActive;
     private bool setUIInitial;
@@ -50,13 +57,9 @@ public class Level01WinController : MonoBehaviour, MotionController
         playerRigidbody = GetComponent<Rigidbody>();
         setUIInitial = false;
         moveServer = GameObject.FindObjectOfType<WinMoveServer>();
-        menuUIScript = GetComponent<MenuUI>();
-        moveCursor = camera.transform.FindChild("MoveCursor");
 
-        if (moveServer != null)
-        {
-            Debug.Log("Move server is setup for player " + PhotonNetwork.player.ID);
-        }
+        menuUIScript = GetComponent<MenuUI>();
+        playerCamera = GetComponent<Camera>();
     }
 
 
@@ -93,9 +96,9 @@ public class Level01WinController : MonoBehaviour, MotionController
         }
         WinMoveController move = moveServer.getController(controller - 1);
 
-        if (camera == null)
+        if (playerCamera == null)
         {
-            camera = transform.GetComponentInChildren<Camera>();
+            playerCamera = transform.GetComponentInChildren<Camera>();
         }
 
         if (move != null && isControllable)
@@ -126,7 +129,7 @@ public class Level01WinController : MonoBehaviour, MotionController
                 moveCursor.position += delta * SCALE;
             }
 
-            GameObject mousePointedAt = HelperLibrary.WorldToScreenRaycast(moveCursor.position, camera, 1000);
+            GameObject mousePointedAt = HelperLibrary.WorldToScreenRaycast(moveCursor.position, playerCamera, 1000);
 
             /* Hover */
             CheckHoverOverMenuItems();
@@ -151,13 +154,14 @@ public class Level01WinController : MonoBehaviour, MotionController
     }
 
     /********************Menu Control***************************/
-    private void CheckHoverOverMenuItems() {
+    private void CheckHoverOverMenuItems()
+    {
         //Control menu items
         if (UIActive)
         {
             menuUIScript.clearSelection();
             LayerMask UIMask = LayerMask.GetMask("UI");
-            GameObject mousePointedAt = HelperLibrary.WorldToScreenRaycast(moveCursor.position, camera, 1000, UIMask);
+            GameObject mousePointedAt = HelperLibrary.WorldToScreenRaycast(moveCursor.position, playerCamera, 1000, UIMask);
             if (isControllable && menuUIScript.playerMenuTransform.gameObject.activeSelf && mousePointedAt != null)
             {
                 menuUIScript.HighlightItem(mousePointedAt);
@@ -176,7 +180,7 @@ public class Level01WinController : MonoBehaviour, MotionController
     private void CheckMenuActive(WinMoveController move)
     {
         Debug.Log("Checking menu");
-        if (HelperLibrary.isTopRight(moveCursor.position, camera))
+        if (HelperLibrary.isTopRight(moveCursor.position, playerCamera))
         {
             menuUIScript.ToggleMenu();
             UIActive = menuUIScript.isActive;
@@ -317,7 +321,7 @@ public class Level01WinController : MonoBehaviour, MotionController
         //Rotate camera around x axis, player around y axis
         if (Mathf.Abs(deltaPos.y) > Mathf.Abs(deltaPos.x))
         {
-            camera.transform.Rotate(-deltaPos.y, 0, 0);
+            playerCamera.transform.Rotate(-deltaPos.y, 0, 0);
         }
         else
         {
@@ -325,7 +329,7 @@ public class Level01WinController : MonoBehaviour, MotionController
             playerRigidbody.MoveRotation(Quaternion.Lerp(transform.rotation, 
                     transform.rotation * newAngle, Time.deltaTime));
             transform.rotation = Quaternion.Lerp(transform.rotation,
-            transform.rotation * newAngle, Time.deltaTime);
+                transform.rotation * newAngle, Time.deltaTime);
         }
     }
 

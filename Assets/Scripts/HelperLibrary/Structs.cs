@@ -6,3 +6,8 @@ public struct RayCastReturnValue
     public GameObject hitObject;
     public Vector3 hitPoint;
 }
+
+public struct ToolStatus
+{
+    public float factor;
+}
