@@ -78,8 +78,7 @@ public class ResizeTool : MonoBehaviour, ToolInterface
         SwitchViewPortToMainCamera();
         PutCameraDown();
         // Turn off collider to allow user to hold the camera.
-        transform.GetComponent<PhotonView>().RPC("EnablePhysics", 
-            PhotonTargets.All, true); 
+        EnablePhysics(true); 
         status.userTransform = null;
         targetOriginalSize = 0.0f;
     }
@@ -164,8 +163,7 @@ public class ResizeTool : MonoBehaviour, ToolInterface
         cameraTool.depth = 0;
         // Disable all colliders and rigidbody to avoid conflicts with the player.
         // TODO(sainan): we can also use layers to achieve this if we have time.
-        transform.GetComponent<PhotonView>().RPC("EnablePhysics", 
-            PhotonTargets.All, false); 
+        EnablePhysics(false); 
 
         standbyCamera.gameObject.SetActive(true);
     }
@@ -199,7 +197,7 @@ public class ResizeTool : MonoBehaviour, ToolInterface
     }
 
     // Enable or disable colliders of this object.
-    [PunRPC]
+    //[PunRPC]
     public void EnablePhysics(bool enable)
     {
         status.flag = enable;
@@ -220,11 +218,11 @@ public class ResizeTool : MonoBehaviour, ToolInterface
         if (status.userTransform != null && toolFollow != null)
         {
             // Broadcast loctions of this object.
-            transform.GetComponent<PhotonView>().RPC("PlayerFollowTarget", 
-                PhotonTargets.All, status.userTransform.position,
+            transform.GetComponent<FollowPlayer>().PlayerFollowTarget(
+                status.userTransform.position,
                 status.userTransform.up,
                 status.userTransform.forward,
-                status.userTransform.rotation); 
+                status.userTransform.rotation);
 
         }
     }

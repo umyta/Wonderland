@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class FollowPlayer : MonoBehaviour
+public class FollowPlayer : Photon.MonoBehaviour
 {
     public float heightDamping = 2.0f;
     // The distance in the x-z plane to the target
@@ -12,7 +12,7 @@ public class FollowPlayer : MonoBehaviour
     public float rotationDamping = 0.1f;
    
     // Allow the resize tool to follow the player around while using.
-    [PunRPC]
+    //    [PunRPC]
     public void PlayerFollowTarget(Vector3 position, Vector3 up, Vector3 forward, Quaternion rotation)
     {
         if (position == Vector3.zero && rotation == Quaternion.identity)
