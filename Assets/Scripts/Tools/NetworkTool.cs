@@ -7,12 +7,10 @@ public class NetworkTool : MonoBehaviour
     private Vector3 correctPlayerPos = Vector3.zero;
     private Quaternion correctPlayerRot = Quaternion.identity;
     private PhotonView photonView;
-    private ResizeTool resizeTool;
 
     void Start()
     {
         photonView = GetComponent<PhotonView>();
-        resizeTool = GetComponent<ResizeTool>();
     }
     // Update is called once per frame
     void Update()

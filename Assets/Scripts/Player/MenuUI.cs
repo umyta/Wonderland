@@ -41,6 +41,7 @@ public class MenuUI : MonoBehaviour
 
     public void displayClue(ClueState clueState)
     {
+        Debug.Log("Clue state is " + clueState);
         playerMenu.displayClue(clueState);
     }
 	

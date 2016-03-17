@@ -43,6 +43,8 @@ public class ResizeTool : MonoBehaviour, ToolInterface
         minSize = minResizeTransform.localScale.x;
         Debug.Log("Min size " + minSize + " Max size " + maxSize);
         status.flag = true;
+        status.targetTransform = null;
+        status.userTransform = null;
     }
 
     // Detects if a tool is found by a user.
@@ -142,12 +144,18 @@ public class ResizeTool : MonoBehaviour, ToolInterface
     // Enable first person view, and make this tool start following the player.
     private void SwitchViewPortToResizeCamera()
     {
+        if (status.userTransform != null)
+        {
+            // Disable the player's camera.
+            status.userTransform.FindChild("PlayerCamera").gameObject.SetActive(false);
+        }
+
         // Enable first person view camera and tag as main to enable mouse interaction only in this view.
         cameraTool.gameObject.SetActive(true);
         cameraTool.tag = "MainCamera";
         // Set this camera below the overlay of screens.
         cameraTool.depth = 0;
-        // Disable all colliders to avoid conflicts with the player.
+        // Disable all colliders and rigidbody to avoid conflicts with the player.
         // TODO(sainan): we can also use layers to achieve this if we have time.
         EnablePhysics(false);
 
@@ -157,17 +165,24 @@ public class ResizeTool : MonoBehaviour, ToolInterface
         standbyCamera.rect = SMALL_SUB_WINDOW_SIZE;
         // Layer this camera on top of the first person view.
         standbyCamera.depth = 1;
-        // Give this camera a new tag.
-        standbyCamera.tag = "DisabledMainCam";
         standbyCamera.gameObject.SetActive(true);
     }
 
     // Change active camera, and bring the main camera back.
     private void SwitchViewPortToMainCamera()
     {
+        if (status.userTransform != null)
+        {
+            // Disable the player's camera.
+            status.userTransform.FindChild("PlayerCamera").gameObject.SetActive(true);
+        }
+            
+        // Disable standbyCamera
+        standbyCamera.gameObject.SetActive(false);
+
         // Report main camera to full screen.
         standbyCamera.rect = FULL_SCREEN_WINDOW_SIZE;
-        standbyCamera.tag = "MainCamera";
+
         // Deactive the cameraTool.
         cameraTool.gameObject.SetActive(false);
         cameraTool.tag = "DisabledMainCam";
