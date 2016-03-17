@@ -126,10 +126,10 @@ public class PlayerMenu : MonoBehaviour
     public void displayClue(ClueState clueState)
     {
         if (clueState == ClueState.None)
-            Clue0.gameObject.SetActive(true);
+            Clue0.gameObject.SetActive(!Clue0.gameObject.activeSelf);
         else if (clueState == ClueState.Clue1)
-            Clue1.gameObject.SetActive(true);
+            Clue1.gameObject.SetActive(!Clue1.gameObject.activeSelf);
         else if (clueState == ClueState.Clue2)
-            Clue2.gameObject.SetActive(true);
+            Clue2.gameObject.SetActive(!Clue2.gameObject.activeSelf);
     }
 }

@@ -111,12 +111,9 @@ public class Level01WinController : MonoBehaviour, MotionController
 
                 /* Update move cursor */
 
-                delta += transform.forward * delta.z;
-                delta += transform.up * delta.y;
-                delta += transform.right * delta.x;
-                delta.z = -delta.z;
-
-                moveCursor.position += delta * SCALE;
+                Vector3 finalDelt = moveCursor.forward * (-delta.z) + moveCursor.up * delta.y + moveCursor.right * delta.x;
+              
+                moveCursor.position += finalDelt * SCALE * 5;
             }
 
             /* Trigger function: either exit tool or reset move cursor */
