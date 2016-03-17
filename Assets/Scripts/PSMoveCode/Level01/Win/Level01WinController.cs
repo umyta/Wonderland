@@ -20,7 +20,7 @@ public class Level01WinController : MonoBehaviour, MotionController
     public int controller;
     //public GameObject controlBall;
     public PlayerState state;
-    public bool isControllable = true;
+    public bool isControllable = false;
 
     //UI
     private Vector3 actualControllerPrevPos;
@@ -81,7 +81,7 @@ public class Level01WinController : MonoBehaviour, MotionController
                 RaycastHit hit = new RaycastHit();
 
                 //If object is at the center, it is available
-                if (Physics.SphereCast(Camera.main.ScreenPointToRay(new Vector3(Camera.main.pixelWidth/2, Camera.main.pixelHeight/2, 0)), 0, out hit, 100))
+                if (Physics.SphereCast(Camera.main.ScreenPointToRay(new Vector3(Camera.main.pixelWidth / 2, Camera.main.pixelHeight / 2, 0)), 0, out hit, 100))
                 {
                     //Debug.Log("Player hit " + hit.transform.gameObject.name);
                 }
@@ -150,9 +150,9 @@ public class Level01WinController : MonoBehaviour, MotionController
 
     public void Move(Vector3 deltaPos)
     {
-        playerRigidbody.MovePosition(transform.position + 
-            transform.forward * deltaPos.z 
-            + transform.right * deltaPos.x + 
+        playerRigidbody.MovePosition(transform.position +
+            transform.forward * deltaPos.z
+            + transform.right * deltaPos.x +
             transform.up * deltaPos.y);
     }
 
@@ -168,7 +168,7 @@ public class Level01WinController : MonoBehaviour, MotionController
         {
             Quaternion newAngle = Quaternion.LookRotation(new Vector3(deltaPos.x, 0, 0));
             playerRigidbody.MoveRotation(Quaternion.Lerp(transform.rotation, 
-                transform.rotation * newAngle, Time.deltaTime));
+                    transform.rotation * newAngle, Time.deltaTime));
         }
     }
 
