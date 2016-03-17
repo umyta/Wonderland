@@ -15,7 +15,9 @@ public class PlayerRPC : MonoBehaviour
             transform.localScale.y * scale, 
             transform.localScale.z * scale);
         // Reset player to the center because if the player gets too big, it may run outside of the room.
-        transform.position = new Vector3(0, 0, 0);
+        // transform.position = new Vector3(0, 0, 0);
+        // Set the field view smaller
+        transform.FindChild("PlayerCamera").GetComponent<Camera>().fieldOfView = 26.0f;
         Debug.Log("Result size" + transform.localScale.ToString());
     }
 }

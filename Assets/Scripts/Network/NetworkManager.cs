@@ -110,6 +110,7 @@ public class NetworkManager : Photon.PunBehaviour
         // Enable player camera.
         foreach (Transform child in player.transform)
         {
+            Debug.Log("Enable Player Camera for " + player.GetPhotonView().ownerId);
             if (child.name == "PlayerCamera")
             {
                 child.gameObject.SetActive(true);

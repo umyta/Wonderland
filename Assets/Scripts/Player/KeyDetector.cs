@@ -41,7 +41,7 @@ public class KeyDetector : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (isControllable && Input.GetKeyDown(KeyCode.Home))
+        if (isControllable && Input.GetKeyDown(KeyCode.Escape))
         {
             CheckKeyExit();
         }

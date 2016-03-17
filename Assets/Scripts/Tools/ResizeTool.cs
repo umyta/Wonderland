@@ -40,7 +40,7 @@ public class ResizeTool : MonoBehaviour, ToolInterface
         originalPose = transform.position;
         toolFollow = transform.GetComponent<FollowPlayer>();
         maxSize = maxResizeTransform.localScale.x - 10.0f;
-        minSize = minResizeTransform.localScale.x;
+        minSize = minResizeTransform.localScale.x + 7.0f;
         Debug.Log("Min size " + minSize + " Max size " + maxSize);
         status.flag = true;
         status.targetTransform = null;
@@ -144,7 +144,7 @@ public class ResizeTool : MonoBehaviour, ToolInterface
     // Enable first person view, and make this tool start following the player.
     private void SwitchViewPortToResizeCamera()
     {
-        if (status.userTransform != null)
+        if (status.userTransform != null && GetComponent<PhotonView>().isMine)
         {
             // Disable the player's camera.
             status.userTransform.FindChild("PlayerCamera").gameObject.SetActive(false);
@@ -171,7 +171,7 @@ public class ResizeTool : MonoBehaviour, ToolInterface
     // Change active camera, and bring the main camera back.
     private void SwitchViewPortToMainCamera()
     {
-        if (status.userTransform != null)
+        if (status.userTransform != null && GetComponent<PhotonView>().isMine)
         {
             // Disable the player's camera.
             status.userTransform.FindChild("PlayerCamera").gameObject.SetActive(true);
