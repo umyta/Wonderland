@@ -41,9 +41,18 @@ public class GameLogicDisplay : MonoBehaviour
             }
 
             ResizeTool tool = toolMap[GameLogic.resizeTool].GetComponent<ResizeTool>();
-            gameStatus.text = 
-                "Player is Scaling " + GameLogic.playerWhoIsBeingResized +
-            " by " + tool.GetStatus().factor + "%\n";
+            ToolStatus status = tool.GetStatus();
+            gameStatus.text = "Player is Scaling"; 
+            if (GameLogic.playerWhoIsBeingResized != GameLogic.InvalidPlayerId)
+            {
+                gameStatus.text += " " + GameLogic.playerWhoIsBeingResized;
+                if (status.factor > 0.0001f)
+                {
+                    gameStatus.text += "From" + status.targetTransform.localScale.x +
+                    " by " + tool.GetStatus().factor + " times\n";
+
+                }
+            }            
         }
         else if (myPlayerID == GameLogic.playerWhoIsUsingSpringTool)
         {
