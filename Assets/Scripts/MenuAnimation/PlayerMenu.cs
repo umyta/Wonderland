@@ -9,6 +9,9 @@ public class PlayerMenu : MonoBehaviour
     private Transform StarObj;
     private Transform ToolObj;
     private Transform KeyObj;
+    private Transform Clue1;
+    private Transform Clue2;
+    private Transform Clue0;
 
     //Destination
     private Vector3 D1 = new Vector3(-5f, 0f, 0f);
@@ -30,6 +33,9 @@ public class PlayerMenu : MonoBehaviour
         StarObj = transform.Find("Clue");
         ToolObj = transform.Find("Tool");
         KeyObj = transform.Find("Key");
+        Clue1 = transform.Find("clue_1");
+        Clue2 = transform.Find("clue_2");
+        Clue0 = transform.Find("clue_none");
     }
 	
     // Update is called once per frame
@@ -41,6 +47,9 @@ public class PlayerMenu : MonoBehaviour
             StarObj = transform.Find("Clue");
             ToolObj = transform.Find("Tool");
             KeyObj = transform.Find("Key");
+            Clue1 = transform.Find("clue_1");
+            Clue2 = transform.Find("clue_2");
+            Clue0 = transform.Find("clue_none");
         }
         OpenMenu();
         CloseMenu();
@@ -97,6 +106,9 @@ public class PlayerMenu : MonoBehaviour
         ToolObj.gameObject.SetActive(isActive);
         KeyObj.gameObject.SetActive(isActive);
         StarObj.gameObject.SetActive(isActive);
+        Clue1.gameObject.SetActive(false);
+        Clue2.gameObject.SetActive(false);
+        Clue0.gameObject.SetActive(false);
 
         if (isActive)
         {
@@ -109,5 +121,15 @@ public class PlayerMenu : MonoBehaviour
             count = 0.0f;
             isCloseAnimationActive = true;
         }
+    }
+
+    public void displayClue(ClueState clueState)
+    {
+        if (clueState == ClueState.None)
+            Clue0.gameObject.SetActive(!Clue0.gameObject.activeSelf);
+        else if (clueState == ClueState.Clue1)
+            Clue1.gameObject.SetActive(!Clue1.gameObject.activeSelf);
+        else if (clueState == ClueState.Clue2)
+            Clue2.gameObject.SetActive(!Clue2.gameObject.activeSelf);
     }
 }

@@ -44,6 +44,7 @@ public class Level01WinController : MonoBehaviour, MotionController
 
     //Clues
     ClueState clueState = ClueState.None;
+    ClueStates clueStateScript;
 
     //Player Movement
     public float speed = 6f;
@@ -68,6 +69,7 @@ public class Level01WinController : MonoBehaviour, MotionController
 
         menuUIScript = GetComponent<MenuUI>();
         playerCamera = GetComponent<Camera>();
+        clueStateScript = GetComponent<ClueStates>();
         toolMap = HelperLibrary.GetAllToolsInScene();
         moveCursorInitPos = moveCursor.transform.localPosition;
     }
@@ -109,16 +111,12 @@ public class Level01WinController : MonoBehaviour, MotionController
 
                 /* Update move cursor */
 
-                delta += transform.forward * delta.z;
-                delta += transform.up * delta.y;
-                delta += transform.right * delta.x;
-                delta.z = -delta.z;
-
-                moveCursor.position += delta * SCALE;
+                Vector3 finalDelt = moveCursor.forward * (-delta.z) + moveCursor.up * delta.y + moveCursor.right * delta.x;
+              
+                moveCursor.position += finalDelt * SCALE * 5;
             }
-
             /* Trigger function: either exit tool or reset move cursor */
-            if (move.triggerValue > 0)
+            if (move.triggerValue > 0 && !move.btnPressed(MoveButton.BTN_MOVE))
             {
                 if (toolState == PlayerState.Tool)
                 {
@@ -240,7 +238,10 @@ public class Level01WinController : MonoBehaviour, MotionController
             tool.Use(transform);
             toolState = PlayerState.Tool;
             if (ClueState.Clue1 > clueState)
+            {
                 clueState = ClueState.Clue1;
+                clueStateScript.SetClueState(clueState);
+            }
         }
         else if (hitGameObj.CompareTag("SpringTool")
                  && GameLogic.playerWhoIsUsingSpringTool == GameLogic.InvalidPlayerId)
@@ -320,14 +321,14 @@ public class Level01WinController : MonoBehaviour, MotionController
     private void CheckKeyExit()
     {
         // Does this current player controls a resize tool.
-        if (GameLogic.playerWhoIsUsingResizeTool != PhotonNetwork.player.ID
+        if (GameLogic.playerWhoIsUsingResizeTool == PhotonNetwork.player.ID
             && toolMap.ContainsKey(GameLogic.resizeTool))
         {
             toolMap[GameLogic.resizeTool].GetComponent<ResizeTool>().Done();
             // Reset game logic for resizeing.
             GameLogic.TagResizePlayer(GameLogic.InvalidPlayerId, GameLogic.InvalidToolId);
         }
-        state = PlayerState.Idle;
+        toolState = PlayerState.Idle;
         // TODO(sainan): setup the exit logic for other tools.
     }
 
