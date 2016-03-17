@@ -11,6 +11,6 @@ public class Scaler : MonoBehaviour {
 
     public void scale(float scale)
     {
-        scale_front.localScale = scale_front.localScale * scale;
+        scale_front.localScale = Vector3.Lerp(scale_front.localScale, scale_front.localScale * scale, Time.deltaTime);
     }
 }
