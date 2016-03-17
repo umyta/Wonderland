@@ -22,6 +22,7 @@ public class Level01WinController : MonoBehaviour, MotionController
     public int controller;
     //public GameObject controlBall;
     public PlayerState state;
+    public PlayerState toolState = PlayerState.Idle;
     public bool isControllable = false;
 
     //UI
@@ -116,11 +117,16 @@ public class Level01WinController : MonoBehaviour, MotionController
             /* Trigger function: either exit tool or reset move cursor */
             if (move.triggerValue > 0)
             {
-                if (state == PlayerState.Tool)
+                if (toolState == PlayerState.Tool)
+                {
+                    Debug.Log("End using camera.");
                     CheckKeyExit();
+                }
                 else
+                {
                     moveCursor.localPosition = moveCursorInitPos;
-                moveCursor.transform.forward = playerCamera.transform.forward;
+                    moveCursor.transform.forward = playerCamera.transform.forward;
+                }
             }
 
             /* Exit menu */
@@ -144,7 +150,13 @@ public class Level01WinController : MonoBehaviour, MotionController
             }
 
             /* Tool operations */
-            if (state == PlayerState.Tool && move.btnOnPress(MoveButton.BTN_MOVE))
+            if (toolState == PlayerState.Tool && move.btnOnPress(MoveButton.BTN_MOVE))
+                initialY = moveCursor.position.y;
+            else if (toolState == PlayerState.Tool && move.btnPressed(MoveButton.BTN_MOVE))
+            {
+                CheckToolPerform(moveCursor.position.y / initialY);
+                Debug.Log("Scaling at " + moveCursor.position.y / initialY);
+            }
 
 
             /* Player Movement */
@@ -223,7 +235,7 @@ public class Level01WinController : MonoBehaviour, MotionController
             // Game logic stores unique ids for the player and the tool.
             GameLogic.TagResizePlayer(playerID, hitGameObj.GetInstanceID());
             tool.Use(transform);
-            state = PlayerState.Tool;
+            toolState = PlayerState.Tool;
         }
         else if (hitGameObj.CompareTag("SpringTool")
                  && GameLogic.playerWhoIsUsingSpringTool == GameLogic.InvalidPlayerId)
@@ -232,6 +244,7 @@ public class Level01WinController : MonoBehaviour, MotionController
             // This player uses this tool.
             ToolInterface tool = hitGameObj.transform.GetComponent<ToolInterface>();
             tool.Use(transform);
+            toolState = PlayerState.Tool;
         }
         else if (hitGameObj.CompareTag("MagnetTool")
                  && GameLogic.playerWhoIsUsingMagnetTool == GameLogic.InvalidPlayerId)
@@ -240,6 +253,7 @@ public class Level01WinController : MonoBehaviour, MotionController
             // This player uses this tool.
             ToolInterface tool = hitGameObj.transform.GetComponent<ToolInterface>();
             tool.Use(transform);
+            toolState = PlayerState.Tool;
         }
     }
 
