@@ -115,9 +115,8 @@ public class Level01WinController : MonoBehaviour, MotionController
               
                 moveCursor.position += finalDelt * SCALE * 5;
             }
-
             /* Trigger function: either exit tool or reset move cursor */
-            if (move.triggerValue > 0)
+            if (move.triggerValue > 0 && !move.btnPressed(MoveButton.BTN_MOVE))
             {
                 if (toolState == PlayerState.Tool)
                 {
@@ -322,14 +321,14 @@ public class Level01WinController : MonoBehaviour, MotionController
     private void CheckKeyExit()
     {
         // Does this current player controls a resize tool.
-        if (GameLogic.playerWhoIsUsingResizeTool != PhotonNetwork.player.ID
+        if (GameLogic.playerWhoIsUsingResizeTool == PhotonNetwork.player.ID
             && toolMap.ContainsKey(GameLogic.resizeTool))
         {
             toolMap[GameLogic.resizeTool].GetComponent<ResizeTool>().Done();
             // Reset game logic for resizeing.
             GameLogic.TagResizePlayer(GameLogic.InvalidPlayerId, GameLogic.InvalidToolId);
         }
-        state = PlayerState.Idle;
+        toolState = PlayerState.Idle;
         // TODO(sainan): setup the exit logic for other tools.
     }
 

@@ -20,26 +20,29 @@ public class ResizeTool : MonoBehaviour, ToolInterface
     private Vector3 originalPose;
     // Use this for initialization
     private static PhotonView ScenePhotonView;
-
+    private Rigidbody rb;
     // A percentage of the original size.
     private Rect SMALL_SUB_WINDOW_SIZE = new Rect(-0.75f, 0.75f, 1.0f, 1.0f);
     private Rect FULL_SCREEN_WINDOW_SIZE = new Rect(0.0f, 0.0f, 1.0f, 1.0f);
     private float maxSize = 0.0f;
+    private float maxSizeBuffer = 0.0f;
     private float minSize = 0.0f;
     // Updated whenever a target is set.
     private float targetOriginalSize = 0.0f;
 
     void Start()
     {
+        rb = GetComponent<Rigidbody>();
         cameraToolTransform.gameObject.SetActive(false);
         standbyCamera = GameObject.Find("StandbyCamera").GetComponent<Camera>();
         cameraTool = cameraToolTransform.GetComponent<Camera>();
         colliders = transform.GetComponents<Collider>();
         originalPose = transform.position;
         toolFollow = transform.GetComponent<FollowPlayer>();
-        maxSize = maxResizeTransform.localScale.x;
+        maxSize = maxResizeTransform.localScale.x - 10.0f;
         minSize = minResizeTransform.localScale.x;
         Debug.Log("Min size " + minSize + " Max size " + maxSize);
+        status.flag = true;
     }
 
     // Detects if a tool is found by a user.
@@ -73,7 +76,7 @@ public class ResizeTool : MonoBehaviour, ToolInterface
         SwitchViewPortToMainCamera();
         PutCameraDown();
         // Turn off collider to allow user to hold the camera.
-        SetAllColliders(true);
+        EnablePhysics(true);
         status.userTransform = null;
         targetOriginalSize = 0.0f;
     }
@@ -146,7 +149,7 @@ public class ResizeTool : MonoBehaviour, ToolInterface
         cameraTool.depth = 0;
         // Disable all colliders to avoid conflicts with the player.
         // TODO(sainan): we can also use layers to achieve this if we have time.
-        SetAllColliders(false);
+        EnablePhysics(false);
 
         // Disable the main camera to allow the new main camera to take effect.
         standbyCamera.gameObject.SetActive(false);
@@ -179,11 +182,18 @@ public class ResizeTool : MonoBehaviour, ToolInterface
     }
 
     // Enable or disable colliders of this object.
-    private void SetAllColliders(bool enable)
+    public void EnablePhysics(bool enable)
     {
+        status.flag = enable;
         foreach (Collider collider in colliders)
         {
             collider.enabled = enable;
+        }
+
+        if (rb != null)
+        {
+            // if colliders are enabled, rb should not be ignoring the gravity and collisions.
+            rb.isKinematic = !enable;
         }
     }
 

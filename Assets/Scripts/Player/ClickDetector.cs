@@ -16,6 +16,11 @@ public class ClickDetector : MonoBehaviour
     int menuUIMask;
     int combinedMask;
     int playerID = GameLogic.InvalidPlayerId;
+    float startHeight = 0.0f;
+    float endHeight = 0.0f;
+    // The max is about 36, min is 0.2 and player is 10, which is roughly 0.273
+    // because 0.2 + 0.28*(36-0.2) ~= 10
+    float defaultResize = 0.273f;
 
     void Awake()
     {
@@ -58,7 +63,7 @@ public class ClickDetector : MonoBehaviour
         // for move, and arrow to turn, and look up or down.
         if (isControllable && Input.GetMouseButtonUp(0))
         {
-            Debug.Log("Button up");
+//            Debug.Log("Button up");
             RayCastReturnValue mousePointedAt = HelperLibrary.RaycastObject(Input.mousePosition, combinedMask);
             GameObject hitGameObj = mousePointedAt.hitObject;
             if (hitGameObj != null && hitGameObj != this.gameObject)
@@ -70,19 +75,30 @@ public class ClickDetector : MonoBehaviour
                 CheckPlayerClick(hitGameObj);
                 // Check if it is clicking a menu item.
                 CheckMenuClick(hitGameObj);
+
+                // Reset the stored mouse interaction for drag.
+                startHeight = 0.0f;
+                endHeight = 0.0f;
             }
         }
 
-        if (isControllable && Input.GetMouseButton(0))
+        if (isControllable && Input.GetMouseButtonDown(0))
         {
             Debug.Log("Button down");
             // When long press, we only want to hit players.
-            RayCastReturnValue mousePointedAt = HelperLibrary.RaycastObject(Input.mousePosition, playerMask);
+            RayCastReturnValue mousePointedAt = HelperLibrary.RaycastObject(Input.mousePosition);
             GameObject hitGameObj = mousePointedAt.hitObject;
             if (hitGameObj != null && hitGameObj != this.gameObject)
             {
+                Debug.Log("hit " + hitGameObj.name);
                 CheckToolPerform(hitGameObj);
             }
+        }
+
+        // Drag.
+        if (isControllable && Input.GetMouseButton(0))
+        {
+            UpdateToolPerform();
         }
     }
 
@@ -179,11 +195,36 @@ public class ClickDetector : MonoBehaviour
                 SetResizeTarget(hitGameObj);
             }
 
+            startHeight = Input.mousePosition.y;
+        }
+    }
+
+    private void UpdateToolPerform()
+    {
+        if (playerID != GameLogic.InvalidPlayerId && playerID == GameLogic.playerWhoIsUsingResizeTool
+            && GameLogic.playerWhoIsBeingResized != GameLogic.InvalidPlayerId && toolMap.ContainsKey(GameLogic.resizeTool)
+            && startHeight != 0.0f)
+        {
+            endHeight = Input.mousePosition.y;
+            // Scale this number down to [-1, 1].
+            float scrollSpeed = (endHeight - startHeight) / Screen.height;
+            Debug.Log("Scrolling at speed" + scrollSpeed);
+            float scaleFactor = defaultResize + scrollSpeed;
+            if (scaleFactor < 0)
+            {
+                scaleFactor = 0.0f;
+            }
+            if (scaleFactor > 1)
+            {
+                scaleFactor = 1.0f;
+            }
+
             // Get the tool and start resize its target.
             ToolInterface tool = toolMap[GameLogic.resizeTool].GetComponent<ResizeTool>();
 
             // TryPerform takes in a number between 0 and 1. 0 being the smallest scaling factor available on screen.
-            tool.TryPerform(Input.mousePosition.y / Screen.height);
+            tool.TryPerform(scaleFactor);
         }
+
     }
 }
