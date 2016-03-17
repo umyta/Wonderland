@@ -12,13 +12,14 @@ public class FollowPlayer : MonoBehaviour
     public float rotationDamping = 0.1f;
    
     // Allow the resize tool to follow the player around while using.
-    public void PlayerFollowTarget(Transform user, Transform target)
+    [PunRPC]
+    public void PlayerFollowTarget(Vector3 position, Vector3 up, Vector3 forward, Quaternion rotation)
     {
-        if (user == null)
+        if (position == Vector3.zero && rotation == Quaternion.identity)
         {
             return;
         }
-        transform.position = user.position + user.up * height + user.forward * distance;
-        transform.rotation = user.rotation;
+        transform.position = position + up * height + forward * distance;
+        transform.rotation = rotation;
     }
 }

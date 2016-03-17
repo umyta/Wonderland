@@ -12,6 +12,8 @@ public class NetworkManager : Photon.PunBehaviour
     public string roomName = "Test";
     public Transform spawnPopint;
     private WinMoveServer winMoveServer;
+    // Disable standby camera if it's not yet done.
+    private GameObject standbyObj;
 
     void Start()
     {
@@ -24,6 +26,7 @@ public class NetworkManager : Photon.PunBehaviour
         // Use PhotonServerSettings.
         PhotonNetwork.ConnectUsingSettings(VERSION);
         winMoveServer = GetComponent<WinMoveServer>();
+        standbyObj = GameObject.Find("StandbyCamera");
     }
 
     void OnGUI()
@@ -64,13 +67,16 @@ public class NetworkManager : Photon.PunBehaviour
                                 spawnPopint.rotation, 
                                 GROUP);
         
-        // Instead of disabling componenets, we use a bool here to differentiate serialization.
-        GameObject camObj = GameObject.Find("StandbyCamera");
-        // Set to follow the player.
-        CameraFollow follow = camObj.GetComponent<CameraFollow>();
-        follow.SetTarget(player.transform);
-        // Disable the main camera.
-        camObj.SetActive(false);
+
+        // if it has not yet been disabled.
+        if (standbyObj.activeSelf && standbyObj.CompareTag("MainCamera"))
+        {
+            // Set to follow the player.
+            CameraFollow follow = standbyObj.GetComponent<CameraFollow>();
+            follow.SetTarget(player.transform);
+            standbyObj.SetActive(false);
+            standbyObj.tag = "StandbyCamera";
+        }
 
         // Enable mouse interaction movement.
         ClickDetector cDetector = player.GetComponent<ClickDetector>();
