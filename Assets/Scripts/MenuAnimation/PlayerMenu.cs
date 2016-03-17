@@ -35,6 +35,13 @@ public class PlayerMenu : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (LightObj == null) {
+            LightObj = transform.Find("Spotlight");
+            ExitObj = transform.Find("Exit");
+            StarObj = transform.Find("Clue");
+            ToolObj = transform.Find("Tool");
+            KeyObj = transform.Find("Key");
+        }
         OpenMenu();
         CloseMenu();
     }

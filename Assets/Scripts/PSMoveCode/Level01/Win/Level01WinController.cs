@@ -11,9 +11,8 @@ public class Level01WinController : MonoBehaviour, MotionController
     {
         Idle,
         Walking,
-        UI}
-
-    ;
+        UI};
+    private Camera camera;
     //Windows Server
     public WinMoveServer moveServer;
     [Range(1, 6)]
@@ -24,10 +23,12 @@ public class Level01WinController : MonoBehaviour, MotionController
 
     //UI
     private Vector3 actualControllerPrevPos;
-    private bool setUIInitial;
-    private Transform moveCursor;
-    private float SCALE = 15.0f;
     private Vector3 delta;
+    private Transform moveCursor;
+    MenuUI menuUIScript;
+    private bool UIActive;
+    private bool setUIInitial;
+    private float SCALE = 15.0f;
 
     //Player Movement
     public float speed = 6f;
@@ -55,6 +56,11 @@ public class Level01WinController : MonoBehaviour, MotionController
     {
         WinMoveController move = moveServer.getController(controller - 1);
 
+        if (camera == null)
+        {
+            camera = transform.GetComponentInChildren<Camera>();
+        }
+
         if (move != null && isControllable)
         {
             //Move coordinates
@@ -73,15 +79,11 @@ public class Level01WinController : MonoBehaviour, MotionController
             else
             {
                 delta = actualControllerCurrPos - actualControllerPrevPos;
-                delta += transform.forward * delta.z;
-                delta += transform.up * delta.y;
-                delta += transform.right * delta.x;
-                delta.z = -delta.z;
                 
                 RaycastHit hit = new RaycastHit();
 
                 //If object is at the center, it is available
-                if (Physics.SphereCast(Camera.main.ScreenPointToRay(new Vector3(Camera.main.pixelWidth/2, Camera.main.pixelHeight/2, 0)), 0, out hit, 100))
+                if (Physics.SphereCast(camera.ScreenPointToRay(new Vector3(camera.pixelWidth/2, camera.pixelHeight/2, 0)), 0, out hit, 100))
                 {
                     //Debug.Log("Player hit " + hit.transform.gameObject.name);
                 }
@@ -92,25 +94,47 @@ public class Level01WinController : MonoBehaviour, MotionController
             /* Update move cursor */
             if (moveCursor == null)
             {
-                moveCursor = Camera.main.transform.FindChild("MoveCursor");
-                moveCursor.forward = Camera.main.transform.forward;
-                moveCursor.up = Camera.main.transform.up;
-                moveCursor.right = Camera.main.transform.right;
+                moveCursor = camera.transform.FindChild("MoveCursor");
             }
 
-            moveCursor.localPosition += delta * SCALE;
+            delta += moveCursor.transform.forward * delta.z;
+            delta += moveCursor.transform.up * delta.y;
+            delta += moveCursor.transform.right * delta.x;
+            delta.z = -delta.z;
+
+            moveCursor.position += delta * SCALE;
 
             /* Check move cursor to screen position */
-            Vector3 cursorPosToScreen = Camera.main.WorldToScreenPoint(moveCursor.position);
+            Vector3 cursorPosToScreen = camera.WorldToScreenPoint(moveCursor.position);
 
             //Press move button on right top of screen will trigger menu
-            if (cursorPosToScreen.x > Camera.main.pixelWidth * 4f / 5f &&
-                cursorPosToScreen.y > Camera.main.pixelHeight * 4f / 5f)
+            if (cursorPosToScreen.x > camera.pixelWidth * 4f / 5f &&
+                cursorPosToScreen.y > camera.pixelHeight * 4f / 5f)
             {
                 if (move.btnOnRelease(MoveButton.BTN_MOVE))
                 {
-                    MenuUI menuUIScript = Transform.FindObjectOfType<MenuUI>();
+                    menuUIScript = Transform.FindObjectOfType<MenuUI>();
                     menuUIScript.ToggleMenu();
+                    UIActive = menuUIScript.isActive;
+                }
+            }
+            //Control menu items
+            else if (UIActive)
+            {
+                LayerMask UIMask = LayerMask.GetMask("UI");
+                GameObject menuItem = HelperLibrary.WorldToScreenRaycast(moveCursor.position, camera, 1000, UIMask);
+
+                if (menuItem != null && menuItem.transform.tag == "UI") {
+                    if (move.btnOnRelease(MoveButton.BTN_MOVE))
+                    {
+                        menuUIScript.SelectItem(menuItem);
+                        Debug.Log(menuItem.name + "is selected.");
+                    }
+                    else
+                    {             
+                        menuUIScript.HighlightItem(menuItem);
+                        Debug.Log(menuItem.name + " is hovered.");
+                    }
                 }
             }
 
@@ -138,7 +162,7 @@ public class Level01WinController : MonoBehaviour, MotionController
                     Turning(deltaPos);
                 }
 
-                Animating(deltaPos);            
+                Animating(deltaPos);
             }
         }
     }
@@ -162,7 +186,7 @@ public class Level01WinController : MonoBehaviour, MotionController
         //Rotate camera around x axis, player around y axis
         if (Mathf.Abs(deltaPos.y) > Mathf.Abs(deltaPos.x))
         {
-            Camera.main.transform.Rotate(-deltaPos.y, 0, 0);
+            camera.transform.Rotate(-deltaPos.y, 0, 0);
         }
         else
         {

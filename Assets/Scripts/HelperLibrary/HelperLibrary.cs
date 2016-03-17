@@ -24,4 +24,16 @@ public class HelperLibrary
 
         return raycastRetVal;
     }
+
+    public static GameObject WorldToScreenRaycast(Vector3 pos, Camera cam, int camRayLength, int layermask = Physics.DefaultRaycastLayers)
+    {
+        Vector3 cursorScreenPt = cam.WorldToScreenPoint(pos);
+        Ray ray = cam.ScreenPointToRay(cursorScreenPt);
+        Debug.DrawRay(ray.origin, ray.direction, Color.green, Time.deltaTime, true);
+        RaycastHit hit;
+        if (Physics.Raycast(ray, out hit, camRayLength, layermask)) {
+            return hit.transform.gameObject;
+        }
+        return null;
+    }
 }
