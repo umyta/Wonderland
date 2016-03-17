@@ -30,18 +30,21 @@ public class HelperLibrary
     }
 
     //Convert move cursor from world point to screen and perform a raycast
-    public static GameObject WorldToScreenRaycast(Vector3 pos, Camera cam, int camRayLength, int layermask = Physics.DefaultRaycastLayers)
+    public static RayCastReturnValue WorldToScreenRaycast(Vector3 pos, Camera cam, int camRayLength, int layermask = Physics.DefaultRaycastLayers)
     {
         Vector3 cursorScreenPt = cam.WorldToScreenPoint(pos);
         Vector2 cursorPt2D = new Vector2(cursorScreenPt.x, cursorScreenPt.y);
         Ray ray = cam.ScreenPointToRay(cursorPt2D);
         Debug.DrawRay(ray.origin, ray.direction.normalized * cameraRayLength, Color.green, Time.deltaTime, true);
         RaycastHit hit;
+        RayCastReturnValue raycastRetVal = new RayCastReturnValue();
         if (Physics.Raycast(ray, out hit, camRayLength, layermask))
         {
-            return hit.collider.gameObject;
+            raycastRetVal.hitObject = hit.collider.gameObject;
+            raycastRetVal.hitPoint = hit.point;
+            return raycastRetVal;
         }
-        return null;
+        return raycastRetVal;
     }
 
     //Detect if move cursor is at top right corner of screen
