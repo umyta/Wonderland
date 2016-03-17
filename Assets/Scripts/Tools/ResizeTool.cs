@@ -13,9 +13,8 @@ public class ResizeTool : MonoBehaviour, ToolInterface
     private Camera standbyCamera;
     private Camera cameraTool;
     private FollowPlayer toolFollow;
-    private Transform user;
-    private Transform target;
     private Collider[] colliders;
+    // Stores the user and the target transform as well as the scaling factor.
     private ToolStatus status;
 
     private Vector3 originalPose;
@@ -23,7 +22,6 @@ public class ResizeTool : MonoBehaviour, ToolInterface
     private static PhotonView ScenePhotonView;
 
     // A percentage of the original size.
-    private float scalingFactor = 0.0f;
     private Rect SMALL_SUB_WINDOW_SIZE = new Rect(-0.75f, 0.75f, 1.0f, 1.0f);
     private Rect FULL_SCREEN_WINDOW_SIZE = new Rect(0.0f, 0.0f, 1.0f, 1.0f);
     private float maxSize = 0.0f;
@@ -39,8 +37,8 @@ public class ResizeTool : MonoBehaviour, ToolInterface
         colliders = transform.GetComponents<Collider>();
         originalPose = transform.position;
         toolFollow = transform.GetComponent<FollowPlayer>();
-        maxSize = maxResizeTransform.GetComponent<BoxCollider>().size.x;
-        minSize = minResizeTransform.GetComponent<BoxCollider>().size.x;
+        maxSize = maxResizeTransform.localScale.x;
+        minSize = minResizeTransform.localScale.x;
         Debug.Log("Min size " + minSize + " Max size " + maxSize);
     }
 
@@ -59,7 +57,7 @@ public class ResizeTool : MonoBehaviour, ToolInterface
     // player tries to use the object.
     public void Use(Transform player)
     {
-        user = player;
+        status.userTransform = player;
   
         SwitchViewPortToResizeCamera();
     }
@@ -67,7 +65,7 @@ public class ResizeTool : MonoBehaviour, ToolInterface
     // Drop the camera.
     public void Done()
     {
-        if (user == null)
+        if (status.userTransform == null)
         {
             return;
         }
@@ -76,33 +74,37 @@ public class ResizeTool : MonoBehaviour, ToolInterface
         PutCameraDown();
         // Turn off collider to allow user to hold the camera.
         SetAllColliders(true);
-        user = null;
+        status.userTransform = null;
         targetOriginalSize = 0.0f;
     }
 
     // Set the target of the resize tool
     public void SetTarget(Transform target)
     {
-        this.target = target;
-        targetOriginalSize = target.GetComponent<BoxCollider>().size.x;
+        status.targetTransform = target;
+        UpdateTargetOriginalSize();
         Debug.Log("Target size: " + targetOriginalSize);
     }
 
     public void TryPerform(float scale)
     {
-        if (user == null)
+        if (status.userTransform == null)
         {
             Debug.Log("Can't perform resizing, please click on the target first");
         }
+
         ResizeTarget(scale); 
     }
 
     public ToolStatus GetStatus()
     {
-        status.factor = (scalingFactor * targetOriginalSize / targetOriginalSize) * 100;
         return status;
     }
 
+    private void UpdateTargetOriginalSize()
+    {
+        targetOriginalSize = status.targetTransform.localScale.x;
+    }
     // Expect scale to be a number between 0 to 1.
     private void AdjustedScaleFactor(float scale)
     {
@@ -110,20 +112,23 @@ public class ResizeTool : MonoBehaviour, ToolInterface
         float maxScaleFactor = maxSize / targetOriginalSize;
         Debug.Log("min scaling factor is " + minScaleFactor);
         Debug.Log("max scaling factor is " + maxScaleFactor);
-        Debug.Log("scale is " + scale);
-        scalingFactor = minScaleFactor + scale * (maxScaleFactor - minScaleFactor);
+        status.factor = minScaleFactor + scale * (maxScaleFactor - minScaleFactor);
+        Debug.Log("adjust scale from " + scale + " to " + status.factor);
     }
 
     private void ResizeTarget(float scale)
     {
-        if (target == null)
+        if (status.targetTransform == null)
         {
             Debug.LogWarning("Please select resize target first by clicking on the target!");
             return;
         }
+        UpdateTargetOriginalSize();
         AdjustedScaleFactor(scale); // Set scaling factor.
-        Debug.Log("Trying to resizing " + targetOriginalSize + " to " + scalingFactor * targetOriginalSize);
-        target.GetComponent<PhotonView>().RPC("Resize", PhotonTargets.All, scalingFactor);       
+        Debug.Log("Trying to resize " + targetOriginalSize + " to " + status.factor * targetOriginalSize);
+        status.targetTransform.GetComponent<PhotonView>().RPC("Resize", PhotonTargets.All, status.factor); 
+        // Set back to 0.0 until next frame update.
+        status.factor = 0.0f;
     }
      
     // Enable first person view, and make this tool start following the player.
@@ -162,8 +167,8 @@ public class ResizeTool : MonoBehaviour, ToolInterface
 
     private void PutCameraDown()
     {
-        originalPose.Set(user.position.x, originalPose.y, user.position.z);
-        originalPose += user.forward * 10;
+        originalPose.Set(status.userTransform.position.x, originalPose.y, status.userTransform.position.z);
+        originalPose += status.userTransform.forward * 10;
         transform.position = originalPose;
         // Doesn't matter which side the camera is facing.
     }
@@ -180,9 +185,9 @@ public class ResizeTool : MonoBehaviour, ToolInterface
     // Update to follow the player
     void LateUpdate()
     {
-        if (user != null && toolFollow != null)
+        if (status.userTransform != null && toolFollow != null)
         {
-            toolFollow.PlayerFollowTarget(user, target);
+            toolFollow.PlayerFollowTarget(status.userTransform, status.targetTransform);
         }
     }
 

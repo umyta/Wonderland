@@ -73,7 +73,7 @@ public class ClickDetector : MonoBehaviour
             }
         }
 
-        if (isControllable && Input.GetMouseButtonDown(0))
+        if (isControllable && Input.GetMouseButton(0))
         {
             Debug.Log("Button down");
             // When long press, we only want to hit players.
