@@ -129,16 +129,17 @@ public class Level01WinController : MonoBehaviour, MotionController
                 moveCursor.position += delta * SCALE;
             }
 
-            GameObject mousePointedAt = HelperLibrary.WorldToScreenRaycast(moveCursor.position, playerCamera, 1000);
+            RayCastReturnValue mousePointedAt = HelperLibrary.WorldToScreenRaycast(moveCursor.position, playerCamera, 1000);
+            GameObject hitObject = mousePointedAt.hitObject;
 
             /* Hover */
             CheckHoverOverMenuItems();
 
-            if (mousePointedAt != null && move.btnOnRelease(MoveButton.BTN_MOVE))
+            if (hitObject != null && hitObject != this.gameObject && move.btnOnRelease(MoveButton.BTN_MOVE))
             {
-                Debug.Log("Raycast hit " + mousePointedAt.name);
-                CheckMenuSelected(mousePointedAt);
-                CheckToolClick(mousePointedAt);
+                Debug.Log("Raycast hit " + mousePointedAt.hitObject.name);
+                CheckMenuSelected(hitObject);
+                CheckToolClick(hitObject);
             }
 
             /* Toggle open and close menu */
@@ -161,10 +162,11 @@ public class Level01WinController : MonoBehaviour, MotionController
         {
             menuUIScript.clearSelection();
             LayerMask UIMask = LayerMask.GetMask("UI");
-            GameObject mousePointedAt = HelperLibrary.WorldToScreenRaycast(moveCursor.position, playerCamera, 1000, UIMask);
-            if (isControllable && menuUIScript.playerMenuTransform.gameObject.activeSelf && mousePointedAt != null)
+            RayCastReturnValue mousePointedAt = HelperLibrary.WorldToScreenRaycast(moveCursor.position, playerCamera, 1000, UIMask);
+            GameObject hitObject = mousePointedAt.hitObject;
+            if (isControllable && menuUIScript.playerMenuTransform.gameObject.activeSelf && hitObject != null)
             {
-                menuUIScript.HighlightItem(mousePointedAt);
+                menuUIScript.HighlightItem(hitObject);
             }
         }
     }
@@ -179,7 +181,6 @@ public class Level01WinController : MonoBehaviour, MotionController
 
     private void CheckMenuActive(WinMoveController move)
     {
-        Debug.Log("Checking menu");
         if (HelperLibrary.isTopRight(moveCursor.position, playerCamera))
         {
             menuUIScript.ToggleMenu();
