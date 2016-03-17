@@ -14,7 +14,7 @@ public class PlayerStatusDisplay : MonoBehaviour
     }
 	
     // Update is called once per frame
-    void Update()
+    void OnGUI()
     {
         if (playerStatus == null)
         {
@@ -47,6 +47,10 @@ public class PlayerStatusDisplay : MonoBehaviour
         if (GameLogic.playerWhoIsBeingMagnetized == myPlayerID)
         {
             playerStatus.text += "Player is being drawn to: " + GameLogic.playerWhoIsUsingMagnetTool + "\n";
+        }
+        else
+        {
+            playerStatus.text = "You are goood!";
         }
     }
 }

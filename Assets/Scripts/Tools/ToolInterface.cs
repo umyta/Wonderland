@@ -11,7 +11,7 @@ public interface ToolInterface
     // SetTarget.
     void SetTarget(Transform target);
     // Perform what this tool is built for.
-    void Perform(float input);
+    void TryPerform(float input);
     // Returns a ToolStatus that contains all tool related parameters.
     // Definition can be found in Struct.cs
     ToolStatus GetStatus();

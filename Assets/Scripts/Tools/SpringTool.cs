@@ -17,7 +17,7 @@ public class SpringTool : MonoBehaviour, ToolInterface
     {
     }
 
-    public void Perform(float force)
+    public void TryPerform(float force)
     {
     }
 

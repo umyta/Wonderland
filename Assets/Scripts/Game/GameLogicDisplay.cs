@@ -17,7 +17,7 @@ public class GameLogicDisplay : MonoBehaviour
     }
 	
     // Update is called once per frame
-    void Update()
+    void OnGUI()
     {
         if (gameStatus == null)
         {
@@ -26,11 +26,17 @@ public class GameLogicDisplay : MonoBehaviour
         }
 
         int myPlayerID = PhotonNetwork.player.ID;
+
+        if (myPlayerID == GameLogic.InvalidPlayerId)
+        {
+            return;
+        }
+
         if (myPlayerID == GameLogic.playerWhoIsUsingResizeTool)
         {
             if (!toolMap.ContainsKey(GameLogic.resizeTool))
             {
-//                Debug.LogWarning("player " + myPlayerID + " is using resizing, but toolMap does not contain " + GameLogic.resizeTool);
+                Debug.LogWarning("player " + myPlayerID + " is using resizing, but toolMap does not contain " + GameLogic.resizeTool);
                 return;
             }
             gameStatus.text = 

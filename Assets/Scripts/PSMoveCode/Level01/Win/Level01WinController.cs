@@ -1,9 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
-
-//Dictionary
-
 using MoveServerNS;
 
 //Sony move server
@@ -35,7 +32,7 @@ public class Level01WinController : MonoBehaviour, MotionController
     private float SCALE = 15.0f;
 
     //Tools
-    Dictionary<int, GameObject> toolMap = new Dictionary<int, GameObject>();
+    Dictionary<int, GameObject> toolMap;
 
     //Player Movement
     public float speed = 6f;
@@ -60,38 +57,15 @@ public class Level01WinController : MonoBehaviour, MotionController
 
         menuUIScript = GetComponent<MenuUI>();
         playerCamera = GetComponent<Camera>();
-    }
-
-
-    void Awake()
-    {
-        // TODO(sainan): consider tag all tools as Tool instead of individual tags.
-        // Considering that we may need to check type of classes to differentiate game logic
-        // in clickDetector.
-        menuUIScript = GetComponent<MenuUI>();
-        GameObject[] tools = GameObject.FindGameObjectsWithTag("ResizeTool");
-        foreach (GameObject obj in tools)
-        {
-            toolMap[obj.GetInstanceID()] = obj;
-        }
-        tools = GameObject.FindGameObjectsWithTag("SpringTool");
-        foreach (GameObject obj in tools)
-        {
-            toolMap[obj.GetInstanceID()] = obj;
-        }
-        tools = GameObject.FindGameObjectsWithTag("MagnetTool");
-        foreach (GameObject obj in tools)
-        {
-            toolMap[obj.GetInstanceID()] = obj;
-        }
+        toolMap = HelperLibrary.GetAllToolsInScene();
     }
 
     // Update is called once per frame
     public void FixedUpdate()
     {
-        if (moveServer == null)
+        if (moveServer == null || toolMap == null)
         {
-            Debug.LogWarning("Please set up move server first");
+            Debug.LogWarning("Please set up move server or toolMap first");
             return;
         }
         WinMoveController move = moveServer.getController(controller - 1);
@@ -265,8 +239,7 @@ public class Level01WinController : MonoBehaviour, MotionController
             // Get the tool and start resize its target.
             ToolInterface tool = toolMap[GameLogic.resizeTool].GetComponent<ResizeTool>();
 
-            tool.Perform(Input.mousePosition.y);
-
+            tool.TryPerform(Input.mousePosition.y);
         }
     }
 
