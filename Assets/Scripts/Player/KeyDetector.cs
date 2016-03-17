@@ -56,7 +56,7 @@ public class KeyDetector : MonoBehaviour
     private void CheckKeyExit()
     {
         // Does this current player controls a resize tool.
-        if (GameLogic.playerWhoIsUsingResizeTool != PhotonNetwork.player.ID
+        if (GameLogic.playerWhoIsUsingResizeTool == PhotonNetwork.player.ID
             && toolMap.ContainsKey(GameLogic.resizeTool))
         {
             toolMap[GameLogic.resizeTool].GetComponent<ResizeTool>().Done();
