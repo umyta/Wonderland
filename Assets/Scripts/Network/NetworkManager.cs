@@ -90,6 +90,7 @@ public class NetworkManager : Photon.PunBehaviour
         // Detects the system and decide on what controller to enable.
         MouseKeyboardCharacterControl mkController = player.GetComponent<MouseKeyboardCharacterControl>();
         Level01WinController psmoveController = player.GetComponent<Level01WinController>();
+        Debug.Log("Setup windMove server for player " + player.GetPhotonView().ownerId);
         psmoveController.moveServer = winMoveServer;
 
         switch (HelperLibrary.GetOS())
