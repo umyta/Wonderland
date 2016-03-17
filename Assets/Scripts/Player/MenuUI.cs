@@ -27,6 +27,10 @@ public class MenuUI : MonoBehaviour
         }
         playerMenu = playerMenuTransform.GetComponent<PlayerMenu>();
     }
+
+    void Update()
+    {
+    }
 	
     // Open arm menu.
     public void ToggleMenu()

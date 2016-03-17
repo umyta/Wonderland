@@ -7,6 +7,7 @@ public class PlayerRPC : MonoBehaviour
     [PunRPC]
     public void Resize(float scale)
     {
+        Debug.Log("Resize " + transform.localScale.ToString() + " by scale");
         // TODO(sainan): we are currently relying on network serilization to sync this.
         // We'll see if this works or do we need RPC calls.
         transform.localScale = new Vector3(

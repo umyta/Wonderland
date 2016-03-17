@@ -1,7 +1,9 @@
 ﻿using UnityEngine;
 using System.Collections;
 using Photon;
+using MoveServerNS;
 
+[RequireComponent(typeof(WinMoveServer))]
 public class NetworkManager : Photon.PunBehaviour
 {
     private const string VERSION = "v0.0.1";
@@ -9,6 +11,7 @@ public class NetworkManager : Photon.PunBehaviour
     public string playerPrefabName = "NetworkPlayer";
     public string roomName = "Test";
     public Transform spawnPopint;
+    private WinMoveServer winMoveServer;
 
     void Start()
     {
@@ -20,7 +23,7 @@ public class NetworkManager : Photon.PunBehaviour
         }
         // Use PhotonServerSettings.
         PhotonNetwork.ConnectUsingSettings(VERSION);
-	
+        winMoveServer = GetComponent<WinMoveServer>();
     }
 
     void OnGUI()
@@ -68,13 +71,11 @@ public class NetworkManager : Photon.PunBehaviour
         follow.SetTarget(player.transform);
         // Disable the main camera.
         camObj.SetActive(false);
-        // Enable player controllers.
-        MouseKeyboardCharacterControl mkController = player.GetComponent<MouseKeyboardCharacterControl>();
 
+        // Enable mouse interaction movement.
         ClickDetector cDetector = player.GetComponent<ClickDetector>();
         KeyDetector kDetector = player.GetComponent<KeyDetector>();
         MouseOverDetector moDetector = player.GetComponent<MouseOverDetector>();
-        mkController.isControllable = true;
         cDetector.isControllable = true;
         kDetector.isControllable = true;
         moDetector.isControllable = true;
@@ -85,6 +86,35 @@ public class NetworkManager : Photon.PunBehaviour
             {
                 child.gameObject.SetActive(true);
             }
+        }
+        // Detects the system and decide on what controller to enable.
+        MouseKeyboardCharacterControl mkController = player.GetComponent<MouseKeyboardCharacterControl>();
+        Level01WinController psmoveController = player.GetComponent<Level01WinController>();
+        psmoveController.moveServer = winMoveServer;
+
+        switch (HelperLibrary.GetOS())
+        {
+            case OperatingSystemForController.Mac:
+                Debug.Log("Detected Mac system, no PSMove is setup here, please use mouse to control your character.");
+                // Enable player controllers.
+                mkController.isControllable = true;
+                break;
+            case OperatingSystemForController.Windows:
+                Debug.Log("Detected Windows system:");
+                if (HelperLibrary.HasMoveControllers(winMoveServer))
+                {
+                    Debug.Log("Found psmove controller! Please use your move to control the player.");
+                    psmoveController.isControllable = true;
+                }
+                else
+                {
+                    Debug.Log("Did not find psmove controller! Please use your mouse to control the player.");
+                    mkController.isControllable = true;
+                }
+                break;
+            default:
+                Debug.LogWarning("Unknown system detected!");
+                break;
         }
     }
 

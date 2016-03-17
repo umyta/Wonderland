@@ -8,3 +8,10 @@ public enum PlayerState
     Walking}
 
 ;
+
+public enum OperatingSystemForController
+{
+    Windows,
+    Mac,
+    UnknownSystem}
+;

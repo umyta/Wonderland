@@ -1,7 +1,8 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class Level01Platform : MonoBehaviour {
+public class Level01Platform : MonoBehaviour
+{
     //Windows controllers
     public GameObject WinServerPrefab;
     private GameObject WinServerInstance;
@@ -19,28 +20,25 @@ public class Level01Platform : MonoBehaviour {
     // Use this for initialization
     void Start()
     {
-        Debug.Log("Starting");
-        isWin = isMac = initialized = false;
-        if (Application.platform == RuntimePlatform.WindowsEditor ||
-            Application.platform == RuntimePlatform.WindowsPlayer)
+        switch (HelperLibrary.GetOS())
         {
-            Debug.Log("Windows System");
-            isWin = true;
-            WinServerInstance = Instantiate(WinServerPrefab, new Vector3(0f, 0f, 0f), Quaternion.identity) as GameObject;
+            case OperatingSystemForController.Mac:
+                isMac = true;
+                Debug.Log("Detected Mac System, please use mouse control");
+                break;
+            case OperatingSystemForController.Windows:
+                WinServerInstance = Instantiate(WinServerPrefab, new Vector3(0f, 0f, 0f), Quaternion.identity) as GameObject;
+                isWin = true;
+                break;
         }
-        else if (Application.platform == RuntimePlatform.OSXEditor ||
-            Application.platform == RuntimePlatform.OSXPlayer)
-        {
-            Debug.Log("Mac OS");
-            isMac = true;
-            //Instantiate(MacServer, new Vector3(0f, 0f, 0f), Quaternion.identity);
-            //Instantiate(MacController, new Vector3(0f, 0f, 0f), Quaternion.identity);
-        }
+
     }
 
-    void Update() {
+    void Update()
+    {
         //Windows
-        if (!initialized) {
+        if (!initialized)
+        {
             if (isWin)
             {
                 WinControllerInstance = GameObject.FindGameObjectWithTag("Player");
@@ -51,7 +49,8 @@ public class Level01Platform : MonoBehaviour {
                     WinControllerInstance.GetComponent<Level01WinController>().moveServer = WinServerInstance.transform.GetComponent<MoveServerNS.WinMoveServer>();
                 }
             }
-            else if (isMac) {
+            else if (isMac)
+            {
                 //Do something
             }                    
         }       

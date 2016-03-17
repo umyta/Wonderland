@@ -19,7 +19,7 @@ public class Level01WinController : MonoBehaviour, MotionController
     public int controller;
     //public GameObject controlBall;
     public PlayerState state;
-    public bool isControllable = true;
+    public bool isControllable = false;
 
     //UI
     private Vector3 actualControllerPrevPos;
@@ -49,6 +49,7 @@ public class Level01WinController : MonoBehaviour, MotionController
         anim = GetComponent<Animator>();
         playerRigidbody = GetComponent<Rigidbody>();
         setUIInitial = false;
+        moveServer = Transform.FindObjectOfType<WinMoveServer>();
     }
 
     // Update is called once per frame
@@ -79,11 +80,11 @@ public class Level01WinController : MonoBehaviour, MotionController
             else
             {
                 delta = actualControllerCurrPos - actualControllerPrevPos;
-                
+
                 RaycastHit hit = new RaycastHit();
 
                 //If object is at the center, it is available
-                if (Physics.SphereCast(camera.ScreenPointToRay(new Vector3(camera.pixelWidth/2, camera.pixelHeight/2, 0)), 0, out hit, 100))
+                if (Physics.SphereCast(camera.ScreenPointToRay(new Vector3(camera.pixelWidth / 2, camera.pixelHeight / 2, 0)), 0, out hit, 100))
                 {
                     //Debug.Log("Player hit " + hit.transform.gameObject.name);
                 }
@@ -122,16 +123,20 @@ public class Level01WinController : MonoBehaviour, MotionController
             else if (UIActive)
             {
                 LayerMask UIMask = LayerMask.GetMask("UI");
-                GameObject menuItem = HelperLibrary.WorldToScreenRaycast(moveCursor.position, camera, 1000, UIMask);
+                RaycastHit hit;
+                GameObject menuItem;
 
-                if (menuItem != null && menuItem.transform.tag == "UI") {
+                if (Physics.Raycast(camera.transform.position, moveCursor.position, out hit, UIMask))
+                {
+                    menuItem = hit.transform.gameObject;
+
                     if (move.btnOnRelease(MoveButton.BTN_MOVE))
                     {
                         menuUIScript.SelectItem(menuItem);
                         Debug.Log(menuItem.name + "is selected.");
                     }
                     else
-                    {             
+                    {
                         menuUIScript.HighlightItem(menuItem);
                         Debug.Log(menuItem.name + " is hovered.");
                     }
@@ -174,9 +179,9 @@ public class Level01WinController : MonoBehaviour, MotionController
 
     public void Move(Vector3 deltaPos)
     {
-        playerRigidbody.MovePosition(transform.position + 
-            transform.forward * deltaPos.z 
-            + transform.right * deltaPos.x + 
+        playerRigidbody.MovePosition(transform.position +
+            transform.forward * deltaPos.z
+            + transform.right * deltaPos.x +
             transform.up * deltaPos.y);
     }
 
@@ -192,7 +197,7 @@ public class Level01WinController : MonoBehaviour, MotionController
         {
             Quaternion newAngle = Quaternion.LookRotation(new Vector3(deltaPos.x, 0, 0));
             playerRigidbody.MoveRotation(Quaternion.Lerp(transform.rotation, 
-                transform.rotation * newAngle, Time.deltaTime));
+                    transform.rotation * newAngle, Time.deltaTime));
         }
     }
 

@@ -33,12 +33,12 @@ public class MouseKeyboardCharacterControl : MonoBehaviour
     Vector3 movement;
     Animator anim;
     Rigidbody playerRigidbody;
-    int floorMask;
+    //    int floorMask;
     MenuUI menu;
 
     void Awake()
     {
-        floorMask = LayerMask.GetMask("Floor");
+//        floorMask = LayerMask.GetMask("Floor");
         anim = GetComponent<Animator>();
         playerRigidbody = GetComponent<Rigidbody>();
         menu = GetComponent<MenuUI>();

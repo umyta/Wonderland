@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
-
+using MoveServerNS;
 
 public class HelperLibrary
 {
@@ -35,5 +35,27 @@ public class HelperLibrary
             return hit.transform.gameObject;
         }
         return null;
+    }
+
+    // If there is at least one controller detected by this server.
+    public static bool HasMoveControllers(WinMoveServer moveServer)
+    {
+        return moveServer.getController(0) != null;
+    }
+
+    public static OperatingSystemForController GetOS()
+    {
+        if (Application.platform == RuntimePlatform.WindowsEditor ||
+            Application.platform == RuntimePlatform.WindowsPlayer)
+        {
+            return OperatingSystemForController.Windows;
+        }
+        if (Application.platform == RuntimePlatform.OSXEditor ||
+            Application.platform == RuntimePlatform.OSXPlayer)
+        {
+            return OperatingSystemForController.Mac;
+        }
+
+        return OperatingSystemForController.UnknownSystem;
     }
 }
