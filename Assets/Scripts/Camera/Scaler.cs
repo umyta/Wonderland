@@ -1,15 +1,16 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class Scaler : MonoBehaviour {
-    private Transform scale_front;
+public class Scaler : MonoBehaviour
+{
+    public Transform scale_front;
     private Vector3 initScale;
 
-	// Use this for initialization
-	void Awake () {
-        scale_front = transform.FindChild("scale_front");
+    // Use this for initialization
+    void Awake()
+    {
         initScale = scale_front.localScale;
-	}
+    }
 
     public void scale(float scale)
     {
