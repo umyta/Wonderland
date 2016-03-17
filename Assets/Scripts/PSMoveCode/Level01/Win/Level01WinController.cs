@@ -1,20 +1,15 @@
 ﻿using UnityEngine;
 using System.Collections;
 using MoveServerNS;
-
+[RequireComponent(typeof(MenuUI))]
 [RequireComponent(typeof(Animator))]
 [RequireComponent(typeof(Rigidbody))]
 public class Level01WinController : MonoBehaviour, MotionController
 {
-    // Stores animation states for serialization.
-    public enum PlayerState
-    {
-        Idle,
-        Walking,
-        UI};
     private Camera camera;
     //Windows Server
-    public WinMoveServer moveServer;
+    private WinMoveServer moveServer;
+
     [Range(1, 6)]
     public int controller;
     //public GameObject controlBall;
@@ -49,12 +44,40 @@ public class Level01WinController : MonoBehaviour, MotionController
         anim = GetComponent<Animator>();
         playerRigidbody = GetComponent<Rigidbody>();
         setUIInitial = false;
-        moveServer = Transform.FindObjectOfType<WinMoveServer>();
+        moveServer = GameObject.FindObjectOfType<WinMoveServer>();
+        if (moveServer != null)
+        {
+            Debug.Log("Move server is setup for player " + PhotonNetwork.player.ID);
+        }
+        menuUIScript = GetComponent<MenuUI>();
+        if (camera == null)
+        {
+            camera = transform.GetComponentInChildren<Camera>();
+        }
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        LayerMask UIMask = LayerMask.GetMask("UI");
+        GameObject mousePointedAt = HelperLibrary.WorldToScreenRaycast(moveCursor.position, camera, 1000, UIMask);
+        if (isControllable && menuUIScript.playerMenuTransform.gameObject.activeSelf
+            && mousePointedAt != null)
+        {
+            menuUIScript.HighlightItem(mousePointedAt);
+            Debug.Log("name is " + mousePointedAt.name);
+            Debug.Log("On layer " + mousePointedAt.layer);
+        }
     }
 
     // Update is called once per frame
     public void FixedUpdate()
     {
+        if (moveServer == null)
+        {
+            Debug.LogWarning("Please set up move server first");
+            return;
+        }
         WinMoveController move = moveServer.getController(controller - 1);
 
         if (camera == null)
@@ -80,7 +103,7 @@ public class Level01WinController : MonoBehaviour, MotionController
             else
             {
                 delta = actualControllerCurrPos - actualControllerPrevPos;
-
+                
                 RaycastHit hit = new RaycastHit();
 
                 //If object is at the center, it is available
@@ -117,18 +140,26 @@ public class Level01WinController : MonoBehaviour, MotionController
                     menuUIScript = Transform.FindObjectOfType<MenuUI>();
                     menuUIScript.ToggleMenu();
                     UIActive = menuUIScript.isActive;
+                    if (!UIActive)
+                        menuUIScript = null;
                 }
             }
             //Control menu items
             else if (UIActive)
             {
-                LayerMask UIMask = LayerMask.GetMask("UI");
                 RaycastHit hit;
                 GameObject menuItem;
+                LayerMask UIMask = LayerMask.GetMask("UI");
 
-                if (Physics.Raycast(camera.transform.position, moveCursor.position, out hit, UIMask))
+                Vector3 direction = moveCursor.position - camera.transform.position;
+
+                Debug.Log("Within ui active.");
+                Debug.DrawRay(moveCursor.position, direction);
+
+                /*if (Physics.Raycast(transform.position, direction, out hit, 1000, UIMask))
                 {
-                    menuItem = hit.transform.gameObject;
+                    menuItem = hit.collider.gameObject;
+                    Debug.Log("Menu hit " + menuItem.name);
 
                     if (move.btnOnRelease(MoveButton.BTN_MOVE))
                     {
@@ -137,10 +168,13 @@ public class Level01WinController : MonoBehaviour, MotionController
                     }
                     else
                     {
-                        menuUIScript.HighlightItem(menuItem);
+                        //menuUIScript.HighlightItem(menuItem);
                         Debug.Log(menuItem.name + " is hovered.");
                     }
-                }
+                }*/
+                //menuItem = HelperLibrary.WorldToScreenRaycast(moveCursor.position, camera, 1000, UIMask);
+                //if (menuItem != null)
+                    //Debug.Log(menuItem.name);
             }
 
             //=================Allow player to move===========//
@@ -167,7 +201,7 @@ public class Level01WinController : MonoBehaviour, MotionController
                     Turning(deltaPos);
                 }
 
-                Animating(deltaPos);
+                Animating(deltaPos);            
             }
         }
     }
@@ -230,5 +264,10 @@ public class Level01WinController : MonoBehaviour, MotionController
             anim.SetBool("IsWalking", false);
         }
 
+    }
+
+    public void SetMoveServer(WinMoveServer server)
+    {
+        moveServer = server;
     }
 }

@@ -46,7 +46,7 @@ public class Level01Platform : MonoBehaviour
                 {
                     initialized = true;
                     WinControllerInstance.AddComponent<Level01WinController>();
-                    WinControllerInstance.GetComponent<Level01WinController>().moveServer = WinServerInstance.transform.GetComponent<MoveServerNS.WinMoveServer>();
+                    WinControllerInstance.GetComponent<Level01WinController>().SetMoveServer(WinServerInstance.transform.GetComponent<MoveServerNS.WinMoveServer>());
                 }
             }
             else if (isMac)

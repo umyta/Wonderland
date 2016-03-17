@@ -28,11 +28,12 @@ public class HelperLibrary
     public static GameObject WorldToScreenRaycast(Vector3 pos, Camera cam, int camRayLength, int layermask = Physics.DefaultRaycastLayers)
     {
         Vector3 cursorScreenPt = cam.WorldToScreenPoint(pos);
-        Ray ray = cam.ScreenPointToRay(cursorScreenPt);
-        Debug.DrawRay(ray.origin, ray.direction, Color.green, Time.deltaTime, true);
+        Vector2 cursorPt2D = new Vector2(cursorScreenPt.x ,cursorScreenPt.y);
+        Ray ray = cam.ScreenPointToRay(cursorPt2D);
+        Debug.DrawRay(ray.origin, ray.direction.normalized * cameraRayLength, Color.green, Time.deltaTime, true);
         RaycastHit hit;
         if (Physics.Raycast(ray, out hit, camRayLength, layermask)) {
-            return hit.transform.gameObject;
+            return hit.collider.gameObject;
         }
         return null;
     }
